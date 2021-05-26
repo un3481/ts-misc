@@ -5,7 +5,7 @@
 */
 
 // Imports
-import { isFunction, PromiseThen } from './type-guards'
+import { PromiseThen } from './type-guards'
 import { wait, waitSync } from './time'
 
 /*
@@ -14,9 +14,10 @@ import { wait, waitSync } from './time'
 ##########################################################################################################################
 */
 
+// Safe Execution Types
 export type TSafeReturn<T> = [T, Error]
-export type TSafe<T> = (...args: unknown[]) => Promise<TSafeReturn<T>>
-export type TSafeSync<T> = (...args: unknown[]) => TSafeReturn<T>
+export type TSafe<A extends Array<any>, T> = (...args: A) => Promise<TSafeReturn<T>>
+export type TSafeSync<A extends Array<any>, T> = (...args: A) => TSafeReturn<T>
 
 /*
 ##########################################################################################################################
@@ -25,22 +26,19 @@ export type TSafeSync<T> = (...args: unknown[]) => TSafeReturn<T>
 */
 
 // Safe Pattern for Error Handling
-export function safe<T>(
-  func: (...args: unknown[]) => T,
+export function safe<A extends Array<any>, T>(
+  func: (...args: A) => T,
   that?: any
-): TSafe<PromiseThen<T>> {
-  // Check Params
-  if (!isFunction(func)) return
-
+): TSafe<A, PromiseThen<T>> {
   // Set Async Function
-  const fasync = that
-    ? async(...args: unknown[]) => func.call(that, ...args)
-    : async(...args: unknown[]) => func(...args)
+  const fasync: (...args: A) => Promise<PromiseThen<T>> = that
+    ? async(...args: A) => await func.call(that, ...args)
+    : async(...args: A) => await func(...args)
 
   // Return Decorated Function
-  return async (...args: unknown[]) => {
+  return async (...args: A) => {
     // Set Variables
-    let value
+    let value: PromiseThen<T>
     let error: Error
 
     // Await Then and Catch
@@ -52,7 +50,7 @@ export function safe<T>(
           resolve(null)
         })
         .then(val => {
-          value = val
+          value = val || null
           resolve(null)
         })
     })
@@ -63,18 +61,15 @@ export function safe<T>(
 }
 
 // Safe Pattern for Synchrounous Error Handling
-export function safeSync<T>(
-  func: (...args: unknown[]) => T,
+export function safeSync<A extends Array<any>, T>(
+  func: (...args: A) => T,
   that?: any
-): TSafeSync<PromiseThen<T>> {
-  // Check Params
-  if (!isFunction(func)) return
-
+): TSafeSync<A, PromiseThen<T>> {
   // Set Async Function
   const safeFunction = safe(func, that)
 
   // Return Decorated Function
-  return (...args: unknown[]) => {
+  return (...args: A) => {
     // Execute Async Function
     const promise = safeFunction(...args)
     const resolution = waitSync(promise)
@@ -93,7 +88,7 @@ export function safeSync<T>(
 // Try something
 export async function repeat<T>(
   exec: () => T,
-  verify: <T>(res: T) => boolean | Promise<boolean>,
+  verify: (res: PromiseThen<T>) => boolean | Promise<boolean>,
   loop = 10,
   delay = 1
 ): Promise<PromiseThen<T>> {
@@ -127,9 +122,8 @@ export function repeatSync<T>(
   loop = 10,
   delay = 1
 ): TSafeReturn<PromiseThen<T>> {
-  const toRepeat = () => repeat(exec, verify, loop, delay)
-  const callSync = safeSync(toRepeat)
-  return callSync()
+  const callSync = safeSync(repeat)
+  return callSync(exec, verify, loop, delay)
 }
 
 /*
