@@ -34,6 +34,9 @@ export type Then<T, F = never> =
   T extends (...args: any) => any ? AsyncThen<T, F>
   : PromiseThen<T, F>
 
+// Type Of Function
+export type TFunction<A extends Array<any>, T> = (...args: A) => T
+
 /*
 ##########################################################################################################################
 #                                                       MISCELLANEOUS                                                    #

@@ -5,7 +5,7 @@
 */
 
 // Imports
-import { PromiseThen } from './type-guards'
+import { PromiseThen, TFunction } from './type-guards'
 import { wait, waitSync } from './time'
 
 /*
@@ -16,8 +16,8 @@ import { wait, waitSync } from './time'
 
 // Safe Execution Types
 export type TSafeReturn<T> = [T, Error]
-export type TSafe<A extends Array<any>, T> = (...args: A) => Promise<TSafeReturn<T>>
-export type TSafeSync<A extends Array<any>, T> = (...args: A) => TSafeReturn<T>
+export type TSafe<A extends Array<any>, T> = TFunction<A, Promise<TSafeReturn<T>>>
+export type TSafeSync<A extends Array<any>, T> = TFunction<A, TSafeReturn<T>>
 
 /*
 ##########################################################################################################################
