@@ -1,22 +1,35 @@
 {
     "env": {
-        "node": true,
-        "es2020": true
+        "es2020": true,
+        "browser": true,
+        "node": true
     },
     "extends": [
-        "standard"
+        "plugin:react/recommended",
+        "standard",
+        "plugin:@typescript-eslint/recommended",
+        "prettier/@typescript-eslint",
+        "prettier/standard",
+        "prettier/react"
     ],
     "parser": "@typescript-eslint/parser",
     "parserOptions": {
+        "ecmaFeatures": {
+            "jsx": true
+        },
         "ecmaVersion": 12,
         "sourceType": "module"
     },
     "plugins": [
-        "@typescript-eslint"
+        "react",
+        "@typescript-eslint",
+        "prettier"
     ],
     "rules": {
-      "space-before-function-paren": "off",
-      "no-use-before-define": "off",
-      "@typescript-eslint/no-use-before-define": ["error"]
+        "prettier/prettier": "error",
+        "space-before-function-paren": "off",
+        "react/prop-types": "off",
+        "no-use-before-define": "off",
+        "@typescript-eslint/no-use-before-define": ["error"]
     }
 }

@@ -11,13 +11,14 @@ export type As<T> = T
 // Export Type Has (Property | Index | Symbol)
 export type HasProperty<Property extends string> = { [P in Property]: unknown | P }
 export type HasIndex<Index extends number> = { [I in Index]: unknown | I }
-export type HasSymbol<Symbol extends symbol> = { [S in Symbol]: unknown | S }
+export type HasSymbol<Symb extends symbol> = { [S in Symb]: unknown | S }
 
 // Export Type Has
 export type Has<Key extends number | string | symbol> =
   Key extends number ? HasIndex<Key>
   : Key extends string ? HasProperty<Key>
-  : Key extends symbol ? HasSymbol<Key> : {}
+  : Key extends symbol ? HasSymbol<Key>
+  : Record<number | string | symbol, unknown>
 
 // Return Type of Promise
 export type PromiseThen<T, F = never> =
