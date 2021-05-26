@@ -25,12 +25,10 @@ export type TSafeSync<T> = (...args: unknown[]) => TSafeReturn<T>
 */
 
 // Safe Pattern for Error Handling
-export const safe: <T>(
+export function safe<T>(
   func: (...args: unknown[]) => T,
   that?: any
-) => TSafe<PromiseThen<T>> = (
-  func, that = null
-) => {
+): TSafe<PromiseThen<T>> {
   // Check Params
   if (!isFunction(func)) return
 
@@ -65,12 +63,10 @@ export const safe: <T>(
 }
 
 // Safe Pattern for Synchrounous Error Handling
-export const safeSync: <T>(
+export function safeSync<T>(
   func: (...args: unknown[]) => T,
   that?: any
-) => TSafeSync<PromiseThen<T>> = (
-  func, that = null
-) => {
+): TSafeSync<PromiseThen<T>> {
   // Check Params
   if (!isFunction(func)) return
 
@@ -95,14 +91,12 @@ export const safeSync: <T>(
 */
 
 // Try something
-export const repeat: <T>(
+export async function repeat<T>(
   exec: () => T,
   verify: <T>(res: T) => boolean | Promise<boolean>,
-  repeat?: number,
-  delay?: number
-) => Promise<PromiseThen<T>> = async(
-  exec, verify, loop = 10, delay = 1
-) => {
+  loop = 10,
+  delay = 1
+): Promise<PromiseThen<T>> {
   // Set Variables
   let i = 0
   const safeFunction = safe(exec)
@@ -127,14 +121,12 @@ export const repeat: <T>(
 }
 
 // Try Something Synchronously
-export const repeatSync: <T>(
+export function repeatSync<T>(
   exec: () => T,
   verify: <T>(res: T) => boolean | Promise<boolean>,
-  repeat?: number,
-  delay?: number
-) => TSafeReturn<PromiseThen<T>> = (
-  exec, verify, loop = 10, delay = 1
-) => {
+  loop = 10,
+  delay = 1
+): TSafeReturn<PromiseThen<T>> {
   const toRepeat = () => repeat(exec, verify, loop, delay)
   const callSync = safeSync(toRepeat)
   return callSync()
