@@ -21,11 +21,6 @@ export type NumberSet<T = unknown> = { [key: number]: T }
 // Typeof Global Set
 export type GlobalSet = GenericSet | StringSet | NumberSet
 
-// Type Of Function
-export type TFunction<A extends unknown[] = unknown[], T = unknown> = (
-  ...args: A
-) => T
-
 // Export Type Has (Property | Index | Symbol)
 export type HasProperty<Key extends string> = { [K in Key]: unknown }
 export type HasSymbol<Key extends symbol> = { [K in Key]: unknown }
@@ -39,6 +34,11 @@ export type Has<Key extends GenericKey> = Key extends number
   : Key extends symbol
   ? HasSymbol<Key>
   : GlobalSet
+
+// Type Of Function
+export type TFunction<A extends unknown[] = unknown[], T = unknown> = (
+  ...args: A
+) => T
 
 // Return Type of Promise
 export type PromiseThen<T, F = never> = T extends PromiseLike<infer U>
