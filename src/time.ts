@@ -55,12 +55,16 @@ const _wait: <T>(promise: Promise<T>) => T = promise => {
 }
 
 // Wait Seconds Sync
-export const waitSync: <T>(
-  mili: number | Promise<T> | ((...args: unknown[]) => Promise<T>)
-) => Then<typeof mili> = mili => {
+export function waitSync<T>(
+  mili: number | Promise<T> | (() => Promise<T>)
+): Then<typeof mili> {
   if (isNumber(mili)) return _wait(wait(mili))
   if (isPromise(mili)) return _wait(mili)
-  if (isFunction(mili)) return _wait(mili())
+  if (isFunction(mili)) {
+    const res = mili()
+    if (!isPromise(res)) return res
+    else return _wait(res)
+  }
 }
 
 /*
