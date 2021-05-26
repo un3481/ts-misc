@@ -5,7 +5,7 @@
 */
 
 // Imports
-import { isNull, isNumber, isFunction, isPromise, Then } from './type-guards'
+import { isNull, isNumber, isFunction, isPromise, Then } from './types'
 
 /*
 ##########################################################################################################################
@@ -14,15 +14,10 @@ import { isNull, isNumber, isFunction, isPromise, Then } from './type-guards'
 */
 
 // Get Date
-export function timestamp() {
-  return (
-    new Date()
-      .toLocaleString(
-        'pt-BR', {
-          timeZone: 'America/Fortaleza'
-        }
-      )
-  )
+export function timestamp(): string {
+  return new Date().toLocaleString('pt-BR', {
+    timeZone: 'America/Fortaleza'
+  })
 }
 
 // Wait Seconds

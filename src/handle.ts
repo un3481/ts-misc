@@ -5,7 +5,7 @@
 */
 
 // Imports
-import { PromiseThen, TFunction } from './type-guards'
+import { PromiseThen, TFunction } from './types'
 import { wait, waitSync } from './time'
 
 /*
@@ -16,8 +16,9 @@ import { wait, waitSync } from './time'
 
 // Safe Execution Types
 export type TSafeReturn<T> = [T, Error]
-export type TSafe<A extends Array<any>, T> = TFunction<A, Promise<TSafeReturn<T>>>
-export type TSafeSync<A extends Array<any>, T> = TFunction<A, TSafeReturn<T>>
+export type TSafeAsyncReturn<T> = Promise<TSafeReturn<T>>
+export type TSafe<A extends unknown[], T> = TFunction<A, TSafeAsyncReturn<T>>
+export type TSafeSync<A extends unknown[], T> = TFunction<A, TSafeReturn<T>>
 
 /*
 ##########################################################################################################################
@@ -26,14 +27,14 @@ export type TSafeSync<A extends Array<any>, T> = TFunction<A, TSafeReturn<T>>
 */
 
 // Safe Pattern for Error Handling
-export function safe<A extends Array<any>, T>(
+export function safe<A extends unknown[], T>(
   func: (...args: A) => T,
-  that?: any
+  that?: unknown
 ): TSafe<A, PromiseThen<T>> {
   // Set Async Function
   const fasync: (...args: A) => Promise<PromiseThen<T>> = that
-    ? async(...args: A) => await func.call(that, ...args)
-    : async(...args: A) => await func(...args)
+    ? async (...args: A) => await func.call(that, ...args)
+    : async (...args: A) => await func(...args)
 
   // Return Decorated Function
   return async (...args: A) => {
@@ -61,9 +62,9 @@ export function safe<A extends Array<any>, T>(
 }
 
 // Safe Pattern for Synchrounous Error Handling
-export function safeSync<A extends Array<any>, T>(
+export function safeSync<A extends unknown[], T>(
   func: (...args: A) => T,
-  that?: any
+  that?: unknown
 ): TSafeSync<A, PromiseThen<T>> {
   // Set Async Function
   const safeFunction = safe(func, that)
@@ -118,7 +119,7 @@ export async function repeat<T>(
 // Try Something Synchronously
 export function repeatSync<T>(
   exec: () => T,
-  verify: <T>(res: T) => boolean | Promise<boolean>,
+  verify: (res: PromiseThen<T>) => boolean | Promise<boolean>,
   loop = 10,
   delay = 1
 ): TSafeReturn<PromiseThen<T>> {

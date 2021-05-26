@@ -1,4 +1,3 @@
-
 /*
 ##########################################################################################################################
 #                                                       MISCELLANEOUS                                                    #
@@ -8,43 +7,57 @@
 // Export Type No-Op
 export type As<T> = T
 
-// Export Type Has (Property | Index | Symbol)
-export type HasProperty<Property extends string> = { [P in Property]: unknown | P }
-export type HasIndex<Index extends number> = { [I in Index]: unknown | I }
-export type HasSymbol<Symb extends symbol> = { [S in Symb]: unknown | S }
+// Typeof Generic Set
+export type GenericKey = string | number | symbol
+export type GenericSet<K extends GenericKey = GenericKey, T = unknown> = Record<
+  K,
+  T
+>
 
-// Export Type Has
-export type Has<Key extends number | string | symbol> =
-  Key extends number ? HasIndex<Key>
-  : Key extends string ? HasProperty<Key>
-  : Key extends symbol ? HasSymbol<Key>
-  : Record<number | string | symbol, unknown>
+// Typeof Specific Set
+export type StringSet<T = unknown> = { [key: string]: T }
+export type NumberSet<T = unknown> = { [key: number]: T }
 
-// Return Type of Promise
-export type PromiseThen<T, F = never> =
-  T extends PromiseLike<infer U> ? U
-  : F extends never ? T : F
-
-// Return Type of Async
-export type AsyncThen<T, F = never> =
-  T extends (...args: unknown[]) => unknown
-  ? PromiseThen<ReturnType<T>, F>
-  : F extends never ? T : F
-
-// Return Type of Promise or Async
-export type Then<T, F = never> =
-  T extends (...args: unknown[]) => unknown
-  ? AsyncThen<T, F>
-  : PromiseThen<T, F>
+// Typeof Global Set
+export type GlobalSet = GenericSet | StringSet | NumberSet
 
 // Type Of Function
-export type TFunction<A extends Array<unknown>, T> = (...args: A) => T
+export type TFunction<A extends unknown[] = unknown[], T = unknown> = (
+  ...args: A
+) => T
 
-// Typeof Any Set
-export type AnySet =
-  Record<number | string | symbol, unknown>
-  | { [key: string]: unknown }
-  | { [key: number]: unknown } 
+// Export Type Has (Property | Index | Symbol)
+export type HasProperty<Key extends string> = { [K in Key]: unknown }
+export type HasSymbol<Key extends symbol> = { [K in Key]: unknown }
+export type HasIndex<Key extends number> = { [K in Key]: unknown }
+
+// Export Type Has
+export type Has<Key extends GenericKey> = Key extends number
+  ? HasIndex<Key>
+  : Key extends string
+  ? HasProperty<Key>
+  : Key extends symbol
+  ? HasSymbol<Key>
+  : GlobalSet
+
+// Return Type of Promise
+export type PromiseThen<T, F = never> = T extends PromiseLike<infer U>
+  ? U
+  : F extends never
+  ? T
+  : F
+
+// Return Type of Async
+export type AsyncThen<T, F = never> = T extends TFunction
+  ? PromiseThen<ReturnType<T>, F>
+  : F extends never
+  ? T
+  : F
+
+// Return Type of Promise or Async
+export type Then<T, F = never> = T extends TFunction
+  ? AsyncThen<T, F>
+  : PromiseThen<T, F>
 
 /*
 ##########################################################################################################################
@@ -52,39 +65,45 @@ export type AnySet =
 ##########################################################################################################################
 */
 
-// Default TypeGuards
+// Null Type-Guard
 export function isNull(obj: unknown): obj is undefined | null {
   if (obj === null || obj === undefined) return true
   else return false
 }
 
+// Boolean Type-Guard
 export function isBoolean(obj: unknown): obj is boolean {
   if (isNull(obj) || typeof obj !== 'boolean') return false
   else return true
 }
 
+// Number Type-Guard
 export function isNumber(obj: unknown): obj is number {
   if (isNull(obj) || typeof obj !== 'number') return false
   else return true
 }
 
+// String Type-Guard
 export function isString(obj: unknown): obj is string {
   if (isNull(obj) || typeof obj !== 'string') return false
   else return true
 }
 
-export function isObject(obj: unknown): obj is Record<string, unknown> {
+// Object Type-Guard
+export function isObject(obj: unknown): obj is StringSet {
   if (isNull(obj) || typeof obj !== 'object') return false
   else return true
 }
 
-export function has<T extends string | number | symbol>(
-  obj: AnySet,
+// Property Type-Guard
+export function has<T extends GenericKey>(
+  obj: GlobalSet,
   key: T
 ): obj is Has<typeof key> {
   if (isNumber(key) && Array.isArray(obj) && obj.length >= key + 1) return true
   if (
-    isString(key) && isObject(obj) &&
+    isString(key) &&
+    isObject(obj) &&
     (Object.keys(obj).includes(key) ||
       Object.prototype.hasOwnProperty.call(obj, key))
   ) {
@@ -92,20 +111,20 @@ export function has<T extends string | number | symbol>(
   } else return key in obj
 }
 
-export function isFunction(
-  obj: unknown
-): obj is (...args: unknown[]) => unknown {
+// Function Type-Guard
+export function isFunction(obj: unknown): obj is TFunction {
   if (isNull(obj) || typeof obj !== 'function') return false
   else return true
 }
 
+// Date Type-Guard
 export function isDate(obj: unknown): obj is Date {
   if (isNull(obj) || !isObject(obj)) return false
   if (obj instanceof Date) return true
   else return false
 }
 
-// Check if Is Promise
+// Promise Type-Guard
 export function isPromise(obj: unknown): obj is Promise<unknown> {
   if (isNull(obj) || !isObject(obj)) return false
   if (obj instanceof Promise) return true
@@ -134,18 +153,18 @@ export type ValidatorDefinition<T> = {
     ? 'number' | 'number?'
     : T[key] extends boolean
     ? 'boolean' | 'boolean?'
-    : (T[key] extends Array<infer TArrayItem>
-        ? Array<ValidatorDefinition<TArrayItem>>
-        : ValidatorTypes)
+    : T[key] extends Array<infer TArrayItem>
+    ? Array<ValidatorDefinition<TArrayItem>>
+    : ValidatorTypes
 }
 
 export function typeGuardFactory<T>(
   reference: ValidatorDefinition<T>
-): (value: any) => value is T {
-  const validators: ((propertyValue: any) => boolean)[] = Object.keys(
+): (value: unknown) => value is T {
+  const validators: ((propertyValue: unknown) => boolean)[] = Object.keys(
     reference
   ).map(key => {
-    const referenceValue = (<any>reference)[key]
+    const referenceValue = (<unknown>reference)[key]
     switch (referenceValue) {
       case 'string':
         return v => typeof v[key] === 'string'
@@ -163,11 +182,13 @@ export function typeGuardFactory<T>(
         // we are not accepting null/undefined for empty array... Should decide how to
         // handle/configure the specific case
         if (Array.isArray(referenceValue)) {
-          const arrayItemValidator = typeGuardFactory<any>(referenceValue[0])
+          const arrayItemValidator = typeGuardFactory<unknown>(
+            referenceValue[0]
+          )
           return v => Array.isArray(v[key]) && v[key].every(arrayItemValidator)
         }
         // TODO: handle default case
-        return _v => false
+        return _v => false && _v
     }
   })
   return (value: T): value is T =>

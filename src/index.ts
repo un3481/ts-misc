@@ -5,9 +5,11 @@
 */
 
 // Imports
-import * as typeGuards from './type-guards'
+import * as numbers from './numbers'
 import * as handle from './handle'
+import * as types from './types'
 import * as time from './time'
+import * as sets from './sets'
 
 /*
 ##########################################################################################################################
@@ -18,13 +20,16 @@ import * as time from './time'
 // Miscellaneous Class
 export default class Miscellaneous {
   // Miscellaneous Set
-  typeGuards = typeGuards
+  numbers = numbers
   handle = handle
+  types = types
   time = time
+  sets = sets
 
   // Allow Info Inside Misc
-  get misc() { return this }
-
+  get misc(): Miscellaneous {
+    return this
+  }
 }
 
 /*
