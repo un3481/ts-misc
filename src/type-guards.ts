@@ -27,16 +27,24 @@ export type PromiseThen<T, F = never> =
 
 // Return Type of Async
 export type AsyncThen<T, F = never> =
-  T extends (...args: any) => any ? PromiseThen<ReturnType<T>, F>
+  T extends (...args: unknown[]) => unknown
+  ? PromiseThen<ReturnType<T>, F>
   : F extends never ? T : F
 
 // Return Type of Promise or Async
 export type Then<T, F = never> =
-  T extends (...args: any) => any ? AsyncThen<T, F>
+  T extends (...args: unknown[]) => unknown
+  ? AsyncThen<T, F>
   : PromiseThen<T, F>
 
 // Type Of Function
-export type TFunction<A extends Array<any>, T> = (...args: A) => T
+export type TFunction<A extends Array<unknown>, T> = (...args: A) => T
+
+// Typeof Any Set
+export type AnySet =
+  Record<number | string | symbol, unknown>
+  | { [key: string]: unknown }
+  | { [key: number]: unknown } 
 
 /*
 ##########################################################################################################################
@@ -71,7 +79,7 @@ export function isObject(obj: unknown): obj is Record<string, unknown> {
 }
 
 export function has<T extends string | number | symbol>(
-  obj: Record<string | number | symbol, unknown> | unknown[],
+  obj: AnySet,
   key: T
 ): obj is Has<typeof key> {
   if (isNumber(key) && Array.isArray(obj) && obj.length >= key + 1) return true
