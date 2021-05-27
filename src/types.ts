@@ -8,56 +8,84 @@
 export type As<T> = T
 
 // Typeof Generic Set
-export type GenericKey = string | number | symbol
-export type GenericSet<K extends GenericKey = GenericKey, T = unknown> = Record<
-  K,
-  T
->
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type KeyOfAny = keyof any
+export type GlobalSet<K extends KeyOfAny = KeyOfAny, T = unknown> = Record<K, T>
 
-// Typeof Specific Set
+// Typeof Index Set
 export type StringSet<T = unknown> = { [key: string]: T }
 export type NumberSet<T = unknown> = { [key: number]: T }
 
-// Typeof Global Set
-export type GlobalSet = GenericSet | StringSet | NumberSet
-
-// Export Type Has (Property | Index | Symbol)
-export type HasProperty<Key extends string> = { [K in Key]: unknown }
-export type HasSymbol<Key extends symbol> = { [K in Key]: unknown }
-export type HasIndex<Key extends number> = { [K in Key]: unknown }
-
 // Export Type Has
-export type Has<Key extends GenericKey> = Key extends number
-  ? HasIndex<Key>
-  : Key extends string
-  ? HasProperty<Key>
-  : Key extends symbol
-  ? HasSymbol<Key>
-  : GlobalSet
-
-// Type Of Function
-export type TFunction<A extends unknown[] = unknown[], T = unknown> = (
-  ...args: A
-) => T
+export type Has<K extends KeyOfAny, T = unknown> = GlobalSet<K, T>
 
 // Return Type of Promise
-export type PromiseThen<T, F = never> = T extends PromiseLike<infer U>
+export type PromiseThen<T, R = never> = T extends PromiseLike<infer U>
   ? U
-  : F extends never
+  : R extends never
   ? T
-  : F
+  : R
 
 // Return Type of Async
-export type AsyncThen<T, F = never> = T extends TFunction
-  ? PromiseThen<ReturnType<T>, F>
-  : F extends never
+export type AsyncThen<T, R = never> = T extends TFunction
+  ? PromiseThen<ReturnType<T>, R>
+  : R extends never
   ? T
-  : F
+  : R
 
 // Return Type of Promise or Async
-export type Then<T, F = never> = T extends TFunction
-  ? AsyncThen<T, F>
-  : PromiseThen<T, F>
+export type Then<T, R = never> = T extends TFunction
+  ? AsyncThen<T, R>
+  : PromiseThen<T, R>
+
+// Type Of Function
+export type TFunction<A extends unknown[] = unknown[], R = unknown> = (
+  ...args: A
+) => R
+
+// Primary Type Symbols
+export type PrimaryTypeSymbols =
+  | 'null'
+  | 'unknown'
+  | 'undefined'
+  | 'boolean'
+  | 'number'
+  | 'string'
+  | 'symbol'
+  | 'object'
+  | 'array'
+  | 'function'
+  | 'promise'
+  | 'date'
+
+// Primary Type Generator
+export type PrimaryType<
+  V extends PrimaryTypeSymbols = 'unknown'
+> = V extends 'null'
+  ? null
+  : V extends 'unknown'
+  ? unknown
+  : V extends 'undefined'
+  ? undefined
+  : V extends 'boolean'
+  ? boolean
+  : V extends 'number'
+  ? number
+  : V extends 'string'
+  ? string
+  : V extends 'symbol'
+  ? symbol
+  : V extends 'object'
+  ? StringSet
+  : V extends 'array'
+  ? unknown[]
+  : V extends 'function'
+  ? TFunction
+  : V extends 'promise'
+  ? Promise<unknown>
+  : V extends 'date'
+  ? Date
+  : never
 
 /*
 ##########################################################################################################################
@@ -95,25 +123,9 @@ export function isObject(obj: unknown): obj is StringSet {
   else return true
 }
 
-// Property Type-Guard
-export function has<T extends GenericKey>(
-  obj: GlobalSet,
-  key: T
-): obj is Has<typeof key> {
-  if (isNumber(key) && Array.isArray(obj) && obj.length >= key + 1) return true
-  if (
-    isString(key) &&
-    isObject(obj) &&
-    (Object.keys(obj).includes(key) ||
-      Object.prototype.hasOwnProperty.call(obj, key))
-  ) {
-    return true
-  } else return key in obj
-}
-
-// Function Type-Guard
-export function isFunction(obj: unknown): obj is TFunction {
-  if (isNull(obj) || typeof obj !== 'function') return false
+// Array Type-Guard
+export function isArray(obj: unknown): obj is unknown[] {
+  if (isNull(obj) || !Array.isArray(obj)) return false
   else return true
 }
 
@@ -129,6 +141,59 @@ export function isPromise(obj: unknown): obj is Promise<unknown> {
   if (isNull(obj) || !isObject(obj)) return false
   if (obj instanceof Promise) return true
   else return false
+}
+
+// Function Type-Guard
+export function isFunction(obj: unknown): obj is TFunction {
+  if (isNull(obj) || typeof obj !== 'function') return false
+  else return true
+}
+
+/*
+##########################################################################################################################
+#                                                       MISCELLANEOUS                                                    #
+##########################################################################################################################
+*/
+
+// General No-Op Type-Guard
+export function as<T>(obj: T): obj is As<T> {
+  return true
+}
+
+// General Type-Guard
+export function is<T extends PrimaryTypeSymbols>(
+  obj: unknown,
+  typeName: T
+): obj is PrimaryType<T> {
+  if (typeName === 'unknown') return true
+  if (typeName === 'null') return isNull(obj)
+  if (typeName === 'array') return isArray(obj)
+  if (typeName === 'promise') return isPromise(obj)
+  if (typeName === 'date') return isDate(obj)
+  else return typeof obj === typeName
+}
+
+// Property Type-Guard
+export function has<K extends KeyOfAny, T extends PrimaryTypeSymbols>(
+  obj: GlobalSet,
+  key: K,
+  keyType?: T
+): obj is Has<K, PrimaryType<T>> {
+  // Perform Key Check
+  if (isNumber(key) && isArray(obj) && obj.length >= key + 1) {
+    return keyType ? is(obj[key], keyType) : true
+  }
+  if (
+    isString(key) &&
+    isObject(obj) &&
+    (Object.keys(obj).includes(key) ||
+      Object.prototype.hasOwnProperty.call(obj, key))
+  ) {
+    return keyType ? is(obj[key], keyType) : true
+  }
+  if (key in obj) {
+    return keyType ? is(obj[key], keyType) : true
+  } else return false
 }
 
 /*

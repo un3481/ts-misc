@@ -5,7 +5,7 @@
 */
 
 // Imports
-import { isNull, isNumber, isFunction, isPromise, Then } from './types'
+import { as, is, Then } from './types'
 
 /*
 ##########################################################################################################################
@@ -38,12 +38,12 @@ const _wait: <T>(promise: Promise<T>) => T = promise => {
       done = true
     })
     .catch(err => {
-      isNull(err)
+      as(err)
       done = true
     })
 
   // While not Done: Pass
-  while (isNull(done)) isNull(null)
+  while (is(done, 'null')) as(null)
 
   // Return Value and Error
   return resolution
@@ -53,13 +53,9 @@ const _wait: <T>(promise: Promise<T>) => T = promise => {
 export function waitSync<T>(
   mili: number | Promise<T> | (() => Promise<T>)
 ): Then<typeof mili> {
-  if (isNumber(mili)) return _wait(wait(mili))
-  if (isPromise(mili)) return _wait(mili)
-  if (isFunction(mili)) {
-    const res = mili()
-    if (!isPromise(res)) return res
-    else return _wait(res)
-  }
+  if (is(mili, 'number')) return _wait(wait(mili))
+  if (is(mili, 'promise')) return _wait(mili)
+  if (is(mili, 'function')) return _wait(mili())
 }
 
 /*

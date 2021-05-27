@@ -17,8 +17,8 @@ import { wait, waitSync } from './time'
 // Safe Execution Types
 export type TSafeReturn<T> = [T, Error]
 export type TSafeAsyncReturn<T> = Promise<TSafeReturn<T>>
-export type TSafe<A extends unknown[], T> = TFunction<A, TSafeAsyncReturn<T>>
-export type TSafeSync<A extends unknown[], T> = TFunction<A, TSafeReturn<T>>
+export type TSafe<A extends unknown[], R> = TFunction<A, TSafeAsyncReturn<R>>
+export type TSafeSync<A extends unknown[], R> = TFunction<A, TSafeReturn<R>>
 
 /*
 ##########################################################################################################################
