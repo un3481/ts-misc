@@ -7,14 +7,29 @@
 // Export Type No-Op
 export type As<T> = T
 
-// Typeof Generic Set
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type KeyOfAny = keyof any
-export type GlobalSet<K extends KeyOfAny = KeyOfAny, T = unknown> = Record<K, T>
-
 // Typeof Index Set
 export type StringSet<T = unknown> = { [key: string]: T }
 export type NumberSet<T = unknown> = { [key: number]: T }
+
+// Typeof Generic Key
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type KeyOfAny = keyof any
+export type KeyOf<T> = T extends Record<KeyOfAny, unknown>
+  ? keyof T
+  : T extends StringSet
+  ? string
+  : T extends NumberSet
+  ? number
+  : never
+
+// Typeof Generic Set
+export type GlobalSet<K extends KeyOfAny = KeyOfAny, T = unknown> =
+  | Record<K, T>
+  | (K extends string
+      ? StringSet<T>
+      : K extends number
+      ? NumberSet<T>
+      : Record<K, T>)
 
 // Export Type Has
 export type Has<K extends KeyOfAny, T = unknown> = GlobalSet<K, T>
@@ -49,6 +64,8 @@ export type PrimaryTypeSymbols =
   | 'unknown'
   | 'undefined'
   | 'boolean'
+  | 'true'
+  | 'false'
   | 'number'
   | 'string'
   | 'symbol'
@@ -69,6 +86,10 @@ export type PrimaryType<
   ? undefined
   : V extends 'boolean'
   ? boolean
+  : V extends 'true'
+  ? true
+  : V extends 'false'
+  ? false
   : V extends 'number'
   ? number
   : V extends 'string'
@@ -76,7 +97,7 @@ export type PrimaryType<
   : V extends 'symbol'
   ? symbol
   : V extends 'object'
-  ? StringSet
+  ? Record<string, unknown>
   : V extends 'array'
   ? unknown[]
   : V extends 'function'
@@ -118,7 +139,7 @@ export function isString(obj: unknown): obj is string {
 }
 
 // Object Type-Guard
-export function isObject(obj: unknown): obj is StringSet {
+export function isObject(obj: unknown): obj is Record<string, unknown> {
   if (isNull(obj) || typeof obj !== 'object') return false
   else return true
 }
@@ -163,14 +184,32 @@ export function as<T>(obj: T): obj is As<T> {
 // General Type-Guard
 export function is<T extends PrimaryTypeSymbols>(
   obj: unknown,
-  typeName: T
+  typeName: T | T[]
 ): obj is PrimaryType<T> {
-  if (typeName === 'unknown') return true
-  if (typeName === 'null') return isNull(obj)
-  if (typeName === 'array') return isArray(obj)
-  if (typeName === 'promise') return isPromise(obj)
-  if (typeName === 'date') return isDate(obj)
-  else return typeof obj === typeName
+  // Set Check Function
+  const check = (t: T) => {
+    if (t === 'unknown') return true
+    if (t === 'null') return isNull(obj)
+    if (t === 'array') return isArray(obj)
+    if (t === 'promise') return isPromise(obj)
+    if (t === 'date') return isDate(obj)
+    if (t === 'true') return obj === true
+    if (t === 'false') return obj === false
+    else return typeof obj === t
+  }
+
+  // Return Check
+  if (!isArray(typeName)) return check(typeName)
+  else return typeName.some(check)
+}
+
+// General Set Type-Guard
+export function are<K extends KeyOfAny, T extends PrimaryTypeSymbols>(
+  obj: GlobalSet<K>,
+  typeName: T | T[]
+): obj is GlobalSet<K, PrimaryType<T>> {
+  // Check All
+  return Object.values(obj).every(v => is(v, typeName))
 }
 
 // Property Type-Guard
@@ -179,20 +218,14 @@ export function has<K extends KeyOfAny, T extends PrimaryTypeSymbols>(
   key: K,
   keyType?: T
 ): obj is Has<K, PrimaryType<T>> {
+  // Set Check Function
+  const check = (k: KeyOfAny) => (keyType ? is(obj[k], keyType) : true)
+
   // Perform Key Check
-  if (isNumber(key) && isArray(obj) && obj.length >= key + 1) {
-    return keyType ? is(obj[key], keyType) : true
-  }
-  if (
-    isString(key) &&
-    isObject(obj) &&
-    (Object.keys(obj).includes(key) ||
-      Object.prototype.hasOwnProperty.call(obj, key))
-  ) {
-    return keyType ? is(obj[key], keyType) : true
-  }
-  if (key in obj) {
-    return keyType ? is(obj[key], keyType) : true
+  if (key in obj) return check(key)
+  if (Object.prototype.hasOwnProperty.call(obj, key)) return check(key)
+  if (isString(key) && isObject(obj) && Object.keys(obj).includes(key)) {
+    return check(key)
   } else return false
 }
 
