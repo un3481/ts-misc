@@ -4,7 +4,7 @@
 ##########################################################################################################################
 */
 
-import type { GlobalSet, KeyOfAny } from './types'
+import { is, GlobalSet, KeyOfAny } from './types'
 
 /*
 ##########################################################################################################################
@@ -31,7 +31,7 @@ export function generate<T>(
 export function serialize<T>(obj: T): T {
   const seen = new WeakSet()
   const getCircularReplacer = (k, value) => {
-    if (this.typeGuards.isObject(value)) {
+    if (is(value, 'object')) {
       if (seen.has(value)) return
       else seen.add(value)
     }
