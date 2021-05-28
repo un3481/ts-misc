@@ -5,7 +5,8 @@
 */
 
 // Imports
-import { as, is, guard, Then } from './types'
+import { is, guard, Then } from './types'
+import { pass } from './utils'
 
 /*
 ##########################################################################################################################
@@ -38,12 +39,12 @@ const sync: <T>(promise: Promise<T>) => T = promise => {
       done = true
     })
     .catch(err => {
-      as(err)
       done = true
+      pass(err)
     })
 
   // While not Done: Pass
-  while (is(done, 'null')) as(null)
+  while (is(done, 'null')) pass(null)
 
   // Return Value and Error
   return resolution
@@ -55,9 +56,9 @@ export function waitSync<
   R extends T extends number ? null : Then<T>
 >(mili: T): R {
   // Wait Each Option
-  if (guard<number>(is, mili, 'number')) return sync(wait(mili))
-  if (guard<Promise<R>>(is, mili, 'promise')) return sync(mili)
-  if (guard<() => Promise<R>>(is, mili, 'function')) return sync(mili())
+  if (guard<number>(is)(mili, 'number')) return sync(wait(mili))
+  if (guard<Promise<R>>(is)(mili, 'promise')) return sync(mili)
+  if (guard<() => Promise<R>>(is)(mili, 'function')) return sync(mili())
 }
 
 /*

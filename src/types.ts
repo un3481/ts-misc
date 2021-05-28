@@ -14,6 +14,28 @@ export type Intersection<U> = (
   ? ValueOf<I>
   : never
 
+/*
+##########################################################################################################################
+#                                                       MISCELLANEOUS                                                    #
+##########################################################################################################################
+*/
+
+// Type Of Function
+export type TFunction<A extends unknown[] = unknown[], R = unknown> = (
+  ...args: A
+) => R
+
+// Type Of Args Of Function
+export type ArgOf<F extends TFunction> = F extends TFunction<infer A>
+  ? A
+  : never
+
+/*
+##########################################################################################################################
+#                                                       MISCELLANEOUS                                                    #
+##########################################################################################################################
+*/
+
 // Typeof Index Set
 export type StringSet<T = unknown> = { [K in string]: T }
 export type NumberSet<T = unknown> = { [key: number]: T }
@@ -48,6 +70,12 @@ export type Has<K extends KeyOf | KeyOf[], T = unknown> = K extends KeyOf
   ? GlobalSet<ValueOf<K>, T>
   : never
 
+/*
+##########################################################################################################################
+#                                                       MISCELLANEOUS                                                    #
+##########################################################################################################################
+*/
+
 // Return Type of Promise
 export type PromiseThen<T extends Promise<unknown>> = T extends PromiseLike<
   infer R
@@ -58,7 +86,7 @@ export type PromiseThen<T extends Promise<unknown>> = T extends PromiseLike<
 // Return Type of Async
 export type AsyncThen<
   T extends TFunction<unknown[], Promise<unknown>>
-> = T extends TFunction ? PromiseThen<ReturnType<T>> : never
+> = PromiseThen<ReturnType<T>>
 
 // Return Type of Promise or Async
 export type Then<T> = T extends Promise<unknown>
@@ -67,13 +95,25 @@ export type Then<T> = T extends Promise<unknown>
   ? AsyncThen<T>
   : never
 
-// Type Of Function
-export type TFunction<A extends unknown[] = unknown[], R = unknown> = (
-  ...args: A
-) => R
+// Return Type of Promise
+export type PromiseAwait<T> = T extends Promise<unknown>
+  ? PromiseAwait<PromiseThen<T>>
+  : T
 
-// Type-Guard Type
-export type TypeGuard<T> = (obj: unknown, ...args: unknown[]) => obj is T
+// Return Type of Await Promise or Async
+export type Await<T> =
+  | PromiseAwait<T>
+  | (T extends Promise<unknown>
+      ? PromiseAwait<T>
+      : T extends TFunction<unknown[], Promise<unknown>>
+      ? PromiseAwait<ReturnType<T>>
+      : T)
+
+/*
+##########################################################################################################################
+#                                                       MISCELLANEOUS                                                    #
+##########################################################################################################################
+*/
 
 // Primary Type Symbols
 export type PrimaryTypes =
@@ -115,6 +155,37 @@ type PrimaryTypeGuard<
   L extends PrimaryTypes,
   T
 > = V extends L ? T : never
+
+/*
+##########################################################################################################################
+#                                                       MISCELLANEOUS                                                    #
+##########################################################################################################################
+*/
+
+// Type-Guard Interface
+export type ITypeGuard = (obj: unknown, ...args: unknown[]) => boolean
+
+// Generic Type-Guard Type
+export type TypeGuard<T, A extends unknown[] = unknown[]> = (
+  obj: unknown,
+  ...args: A
+) => obj is T
+
+/*
+##########################################################################################################################
+#                                                       MISCELLANEOUS                                                    #
+##########################################################################################################################
+*/
+
+// General Make Type-Guard
+export function extend<T>(obj: unknown): obj is As<T> {
+  return true
+}
+
+// General Set Type-Guard
+export function guard<T>(tg: ITypeGuard): TypeGuard<T> {
+  if (extend<TypeGuard<T>>(tg)) return tg
+}
 
 /*
 ##########################################################################################################################
@@ -184,11 +255,6 @@ export function isFunction(obj: unknown): obj is TFunction {
 ##########################################################################################################################
 */
 
-// General No-Op Type-Guard
-export function as<T>(obj: T): obj is As<T> {
-  return true
-}
-
 // General Type-Guard
 export function is<T extends PrimaryTypes>(
   obj: unknown,
@@ -242,37 +308,6 @@ export function are<K extends KeyOf, T extends PrimaryTypes>(
 ): obj is GlobalSet<K, PrimaryType<T>> {
   // Check All
   return Object.values(obj).every(v => is(v, typeName))
-}
-
-/*
-##########################################################################################################################
-#                                                       MISCELLANEOUS                                                    #
-##########################################################################################################################
-*/
-
-// General Make Type-Guard
-export function isGuard<T>(
-  tg: (obj: unknown, ...args: unknown[]) => boolean
-): tg is TypeGuard<T> {
-  return true
-}
-
-// General Set Type-Guard
-export function setGuard<T>(
-  tg: (obj: unknown, ...args: unknown[]) => boolean
-): TypeGuard<T> {
-  if (!isGuard<T>(tg)) return null
-  else return tg
-}
-
-// General Execute Type-Guard
-export function guard<T>(
-  tg: (obj: unknown, ...args: unknown[]) => boolean,
-  obj: unknown,
-  ...args: unknown[]
-): obj is T {
-  const typeGuard = setGuard<T>(tg)
-  return typeGuard(obj, ...args)
 }
 
 /*

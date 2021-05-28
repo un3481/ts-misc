@@ -5,7 +5,7 @@
 */
 
 // Imports
-import { PromiseThen, TFunction } from './types'
+import { Await, TFunction, extend } from './types'
 import { wait, waitSync } from './time'
 
 /*
@@ -30,16 +30,16 @@ export type TSafeSync<A extends unknown[], R> = TFunction<A, TSafeReturn<R>>
 export function safe<A extends unknown[], T>(
   func: (...args: A) => T,
   that?: unknown
-): TSafe<A, PromiseThen<T>> {
+): TSafe<A, Await<T>> {
   // Set Async Function
-  const fasync: (...args: A) => Promise<PromiseThen<T>> = that
+  const fasync: (...args: A) => Promise<Await<T>> = that
     ? async (...args: A) => await func.call(that, ...args)
     : async (...args: A) => await func(...args)
 
   // Return Decorated Function
   return async (...args: A) => {
     // Set Variables
-    let value: PromiseThen<T>
+    let value: Await<T>
     let error: Error
 
     // Await Then and Catch
@@ -65,7 +65,7 @@ export function safe<A extends unknown[], T>(
 export function safeSync<A extends unknown[], T>(
   func: (...args: A) => T,
   that?: unknown
-): TSafeSync<A, PromiseThen<T>> {
+): TSafeSync<A, Await<T>> {
   // Set Async Function
   const safeFunction = safe(func, that)
 
@@ -89,10 +89,10 @@ export function safeSync<A extends unknown[], T>(
 // Try something
 export async function repeat<T>(
   exec: () => T,
-  verify: (res: PromiseThen<T>) => boolean | Promise<boolean>,
+  verify: (res: Await<T>) => boolean | Promise<boolean>,
   loop = 10,
   delay = 1
-): Promise<PromiseThen<T>> {
+): Promise<Await<T>> {
   // Set Variables
   let i = 0
   const safeFunction = safe(exec)
@@ -119,12 +119,13 @@ export async function repeat<T>(
 // Try Something Synchronously
 export function repeatSync<T>(
   exec: () => T,
-  verify: (res: PromiseThen<T>) => boolean | Promise<boolean>,
+  verify: (res: Await<T>) => boolean | Promise<boolean>,
   loop = 10,
   delay = 1
-): TSafeReturn<PromiseThen<T>> {
+): TSafeReturn<Await<T>> {
   const callSync = safeSync(repeat)
-  return callSync(exec, verify, loop, delay)
+  const value = callSync(exec, verify, loop, delay)
+  if (extend<TSafeReturn<Await<T>>>(value)) return value
 }
 
 /*
