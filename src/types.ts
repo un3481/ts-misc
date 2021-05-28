@@ -26,9 +26,14 @@ export type TFunction<A extends unknown[] = unknown[], R = unknown> = (
 ) => R
 
 // Type Of Args Of Function
-export type ArgOf<F extends TFunction> = F extends TFunction<infer A>
+export type ArgOf<F extends TFunction = TFunction> = F extends TFunction<
+  infer A
+>
   ? A
   : never
+
+// Type Of Return Of Function
+export type ReturnOf<F extends TFunction = TFunction> = ReturnType<F>
 
 /*
 ##########################################################################################################################
@@ -86,7 +91,7 @@ export type PromiseThen<T extends Promise<unknown>> = T extends PromiseLike<
 // Return Type of Async
 export type AsyncThen<
   T extends TFunction<unknown[], Promise<unknown>>
-> = PromiseThen<ReturnType<T>>
+> = PromiseThen<ReturnOf<T>>
 
 // Return Type of Promise or Async
 export type Then<T> = T extends Promise<unknown>
@@ -106,7 +111,7 @@ export type Await<T> =
   | (T extends Promise<unknown>
       ? PromiseAwait<T>
       : T extends TFunction<unknown[], Promise<unknown>>
-      ? PromiseAwait<ReturnType<T>>
+      ? PromiseAwait<ReturnOf<T>>
       : T)
 
 /*
@@ -163,10 +168,13 @@ type PrimaryTypeGuard<
 */
 
 // Type-Guard Interface
-export type ITypeGuard = (obj: unknown, ...args: unknown[]) => boolean
+export type TypeGuardShape<A extends ArgOf = ArgOf> = (
+  obj: unknown,
+  ...args: A
+) => boolean
 
 // Generic Type-Guard Type
-export type TypeGuard<T, A extends unknown[] = unknown[]> = (
+export type TypeGuard<T, A extends ArgOf = ArgOf> = (
   obj: unknown,
   ...args: A
 ) => obj is T
@@ -183,7 +191,7 @@ export function extend<T>(obj: unknown): obj is As<T> {
 }
 
 // General Set Type-Guard
-export function guard<T>(tg: ITypeGuard): TypeGuard<T> {
+export function guard<T>(tg: TypeGuardShape): TypeGuard<T> {
   if (extend<TypeGuard<T>>(tg)) return tg
 }
 
@@ -241,12 +249,6 @@ export function isPromise(obj: unknown): obj is Promise<unknown> {
   if (isNull(obj) || !isObject(obj)) return false
   if (obj instanceof Promise) return true
   else return false
-}
-
-// Function Type-Guard
-export function isFunction(obj: unknown): obj is TFunction {
-  if (isNull(obj) || typeof obj !== 'function') return false
-  else return true
 }
 
 /*
@@ -308,6 +310,32 @@ export function are<K extends KeyOf, T extends PrimaryTypes>(
 ): obj is GlobalSet<K, PrimaryType<T>> {
   // Check All
   return Object.values(obj).every(v => is(v, typeName))
+}
+
+/*
+##########################################################################################################################
+#                                                       MISCELLANEOUS                                                    #
+##########################################################################################################################
+*/
+
+// Function Type-Guard
+export function isFunction(obj: unknown): obj is TFunction {
+  if (isNull(obj) || typeof obj !== 'function') return false
+  else return true
+}
+
+// Function Return Type-Guard
+export function isReturn<R extends PrimaryTypes>(
+  typeName: R
+): <A extends ArgOf>(obj: TFunction<A>, ...args: A) => obj is TFunction<A, R> {
+  // Set Type-Guard
+  const typeGuard = <A extends ArgOf>(
+    obj: TFunction<A>,
+    ...args: A
+  ): obj is TFunction<A, R> => is(obj(...args), typeName)
+
+  // Return Type-Guard
+  return typeGuard
 }
 
 /*
