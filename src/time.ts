@@ -5,7 +5,7 @@
 */
 
 // Imports
-import { as, is, test, Then } from './types'
+import { as, is, guard, Then } from './types'
 
 /*
 ##########################################################################################################################
@@ -26,7 +26,7 @@ export function wait(mili: number): Promise<null> {
 }
 
 // Wait for Promise
-const _wait: <T>(promise: Promise<T>) => T = promise => {
+const sync: <T>(promise: Promise<T>) => T = promise => {
   // Set Variables
   let resolution
   let done: boolean
@@ -51,13 +51,13 @@ const _wait: <T>(promise: Promise<T>) => T = promise => {
 
 // Wait Seconds Sync
 export function waitSync<
-  T extends number | Promise<R> | (() => Promise<R>),
-  R extends unknown = never
->(mili: T): Then<T> {
+  T extends number | Promise<unknown> | (() => Promise<R>),
+  R extends T extends number ? null : Then<T>
+>(mili: T): R {
   // Wait Each Option
-  if (test(is, [mili, 'number'])) return _wait(wait(mili))
-  if (test(is, [mili, 'promise'])) return _wait(mili)
-  if (test(is, [mili, 'function'])) return _wait(mili())
+  if (guard<number>(is, mili, 'number')) return sync(wait(mili))
+  if (guard<Promise<R>>(is, mili, 'promise')) return sync(mili)
+  if (guard<() => Promise<R>>(is, mili, 'function')) return sync(mili())
 }
 
 /*

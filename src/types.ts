@@ -72,8 +72,11 @@ export type TFunction<A extends unknown[] = unknown[], R = unknown> = (
   ...args: A
 ) => R
 
+// Type-Guard Type
+export type TypeGuard<T> = (obj: unknown, ...args: unknown[]) => obj is T
+
 // Primary Type Symbols
-export type PrimaryTypeSymbols =
+export type PrimaryTypes =
   | 'null'
   | 'unknown'
   | 'undefined'
@@ -89,30 +92,29 @@ export type PrimaryTypeSymbols =
   | 'promise'
   | 'date'
 
+// Primary Type Generator
+export type PrimaryType<V extends PrimaryTypes = 'unknown'> =
+  | PrimaryTypeGuard<V, 'null', null>
+  | PrimaryTypeGuard<V, 'unknown', unknown>
+  | PrimaryTypeGuard<V, 'undefined', undefined>
+  | PrimaryTypeGuard<V, 'boolean', boolean>
+  | PrimaryTypeGuard<V, 'true', true>
+  | PrimaryTypeGuard<V, 'false', false>
+  | PrimaryTypeGuard<V, 'number', number>
+  | PrimaryTypeGuard<V, 'string', string>
+  | PrimaryTypeGuard<V, 'symbol', symbol>
+  | PrimaryTypeGuard<V, 'object', StringSet>
+  | PrimaryTypeGuard<V, 'array', unknown[]>
+  | PrimaryTypeGuard<V, 'function', TFunction>
+  | PrimaryTypeGuard<V, 'promise', Promise<unknown>>
+  | PrimaryTypeGuard<V, 'date', Date>
+
 // Type To Iterate
-type SetPrimaryType<
-  V extends PrimaryTypeSymbols,
-  L extends PrimaryTypeSymbols,
+type PrimaryTypeGuard<
+  V extends PrimaryTypes,
+  L extends PrimaryTypes,
   T
 > = V extends L ? T : never
-
-// Primary Type Generator
-export type PrimaryType<V extends PrimaryTypeSymbols = 'unknown'> =
-  | SetPrimaryType<V, 'null', null>
-  | SetPrimaryType<V, 'unknown', unknown>
-  | SetPrimaryType<V, 'undefined', undefined>
-  | SetPrimaryType<V, 'boolean', boolean>
-  | SetPrimaryType<V, 'true', true>
-  | SetPrimaryType<V, 'false', false>
-  | SetPrimaryType<V, 'number', number>
-  | SetPrimaryType<V, 'string', string>
-  | SetPrimaryType<V, 'symbol', symbol>
-  | SetPrimaryType<V, 'object', StringSet>
-  | SetPrimaryType<V, 'array', unknown[]>
-  | SetPrimaryType<V, 'function', TFunction>
-  | SetPrimaryType<V, 'promise', Promise<unknown>>
-  | SetPrimaryType<V, 'date', Date>
-  | never
 
 /*
 ##########################################################################################################################
@@ -188,12 +190,12 @@ export function as<T>(obj: T): obj is As<T> {
 }
 
 // General Type-Guard
-export function is<T extends PrimaryTypeSymbols>(
+export function is<T extends PrimaryTypes>(
   obj: unknown,
   typeName: T | T[]
 ): obj is PrimaryType<T> {
   // Set Check Function
-  const check = (t: T) => {
+  const checkType = (t: T) => {
     if (t === 'unknown') return true
     if (t === 'null') return isNull(obj)
     if (t === 'array') return isArray(obj)
@@ -205,35 +207,36 @@ export function is<T extends PrimaryTypeSymbols>(
   }
 
   // Return Check
-  if (!isArray(typeName)) return check(typeName)
-  else return typeName.some(check)
+  if (!isArray(typeName)) return checkType(typeName)
+  else return typeName.some(checkType)
 }
 
 // Property Type-Guard
-export function has<K extends KeyOf, T extends PrimaryTypeSymbols>(
+export function has<K extends KeyOf, T extends PrimaryTypes>(
   obj: GlobalSet,
   key: K | K[],
-  keyType?: T | T[]
+  typeName?: T | T[]
 ): obj is Intersection<Has<K, PrimaryType<T>>> {
   // Set Check Function
-  const checkType = (k: KeyOf) => (keyType ? is(obj[k], keyType) : true)
+  const checkType = (o: GlobalSet, k: KeyOf): o is Has<K, PrimaryType<T>> =>
+    typeName ? is(o[k], typeName) : true
 
   // Perform Key Check
-  const checkKey = (k: KeyOf) => {
-    if (k in obj) return checkType(k)
-    if (Object.prototype.hasOwnProperty.call(obj, k)) return checkType(k)
-    if (isString(k) && isObject(obj) && Object.keys(obj).includes(k)) {
-      return checkType(k)
+  const checkKey = (o: GlobalSet, k: KeyOf): o is Has<K, unknown> => {
+    if (k in o) return checkType(o, k)
+    if (Object.prototype.hasOwnProperty.call(o, k)) return checkType(o, k)
+    if (isString(k) && isObject(o) && Object.keys(o).includes(k)) {
+      return checkType(o, k)
     } else return false
   }
 
   // Return Check
-  if (!isArray(key)) return checkKey(key)
-  else return key.every(checkKey)
+  if (!isArray(key)) return checkKey(obj, key)
+  else return key.every(k => checkKey(obj, k))
 }
 
 // General Sets Type-Guard
-export function are<K extends KeyOf, T extends PrimaryTypeSymbols>(
+export function are<K extends KeyOf, T extends PrimaryTypes>(
   obj: GlobalSet<K>,
   typeName: T | T[]
 ): obj is GlobalSet<K, PrimaryType<T>> {
@@ -241,13 +244,35 @@ export function are<K extends KeyOf, T extends PrimaryTypeSymbols>(
   return Object.values(obj).every(v => is(v, typeName))
 }
 
+/*
+##########################################################################################################################
+#                                                       MISCELLANEOUS                                                    #
+##########################################################################################################################
+*/
+
 // General Make Type-Guard
-export function test<T>(
-  tg: TFunction<unknown[], boolean>,
-  args: unknown[]
+export function isGuard<T>(
+  tg: (obj: unknown, ...args: unknown[]) => boolean
+): tg is TypeGuard<T> {
+  return true
+}
+
+// General Set Type-Guard
+export function setGuard<T>(
+  tg: (obj: unknown, ...args: unknown[]) => boolean
+): TypeGuard<T> {
+  if (!isGuard<T>(tg)) return null
+  else return tg
+}
+
+// General Execute Type-Guard
+export function guard<T>(
+  tg: (obj: unknown, ...args: unknown[]) => boolean,
+  obj: unknown,
+  ...args: unknown[]
 ): obj is T {
-  // Check All
-  return tg(...args)
+  const typeGuard = setGuard<T>(tg)
+  return typeGuard(obj, ...args)
 }
 
 /*
