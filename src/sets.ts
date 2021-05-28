@@ -4,7 +4,7 @@
 ##########################################################################################################################
 */
 
-import { is, GlobalSet, KeyOfAny } from './types'
+import { is, GlobalSet, KeyOf } from './types'
 
 /*
 ##########################################################################################################################
@@ -13,7 +13,7 @@ import { is, GlobalSet, KeyOfAny } from './types'
 */
 
 // Get Random Item of Array
-export function rand<T>(arr: GlobalSet<KeyOfAny, T>): T {
+export function rand<T>(arr: GlobalSet<KeyOf, T>): T {
   const keys = Object.keys(arr)
   const k = keys[Math.floor(Math.random() * keys.length)]
   return arr[k]
@@ -22,7 +22,7 @@ export function rand<T>(arr: GlobalSet<KeyOfAny, T>): T {
 // Generate new Serial Object
 export function generate<T>(
   obj: T,
-  replacer?: (key: KeyOfAny, value: unknown) => unknown
+  replacer?: (key: KeyOf, value: unknown) => unknown
 ): T {
   return JSON.parse(JSON.stringify(obj, replacer))
 }

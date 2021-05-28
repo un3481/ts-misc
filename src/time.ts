@@ -5,7 +5,7 @@
 */
 
 // Imports
-import { as, is, Then } from './types'
+import { as, is, test, Then } from './types'
 
 /*
 ##########################################################################################################################
@@ -50,12 +50,14 @@ const _wait: <T>(promise: Promise<T>) => T = promise => {
 }
 
 // Wait Seconds Sync
-export function waitSync<T>(
-  mili: number | Promise<T> | (() => Promise<T>)
-): Then<typeof mili> {
-  if (is(mili, 'number')) return _wait(wait(mili))
-  if (is(mili, 'promise')) return _wait(mili)
-  if (is(mili, 'function')) return _wait(mili())
+export function waitSync<
+  T extends number | Promise<R> | (() => Promise<R>),
+  R extends unknown = never
+>(mili: T): Then<T> {
+  // Wait Each Option
+  if (test(is, [mili, 'number'])) return _wait(wait(mili))
+  if (test(is, [mili, 'promise'])) return _wait(mili)
+  if (test(is, [mili, 'function'])) return _wait(mili())
 }
 
 /*

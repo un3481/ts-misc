@@ -7,51 +7,65 @@
 // Export Type No-Op
 export type As<T> = T
 
+// Intersection Type
+export type Intersection<U> = (
+  U extends unknown ? (...args: U[]) => void : never
+) extends TFunction<infer I>
+  ? ValueOf<I>
+  : never
+
 // Typeof Index Set
-export type StringSet<T = unknown> = { [key: string]: T }
+export type StringSet<T = unknown> = { [K in string]: T }
 export type NumberSet<T = unknown> = { [key: number]: T }
 
 // Typeof Generic Key
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type KeyOfAny = keyof any
-export type KeyOf<T> = T extends Record<KeyOfAny, unknown>
-  ? keyof T
-  : T extends StringSet
-  ? string
-  : T extends NumberSet
-  ? number
+export type KeyOf<
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  T extends Record<keyof any, unknown> = Record<keyof any, unknown>
+> = T extends Record<infer K, unknown> ? K : never
+
+// Typeof Generic Value
+export type ValueOf<T extends GlobalSet = GlobalSet> = T extends GlobalSet<
+  KeyOf,
+  infer V
+>
+  ? V
   : never
 
 // Typeof Generic Set
-export type GlobalSet<K extends KeyOfAny = KeyOfAny, T = unknown> =
+export type GlobalSet<K extends KeyOf = KeyOf, T = unknown> =
   | Record<K, T>
-  | (K extends string
-      ? StringSet<T>
-      : K extends number
-      ? NumberSet<T>
-      : Record<K, T>)
+  | K extends string
+  ? StringSet<T>
+  : K extends number
+  ? NumberSet<T>
+  : Record<K, T>
 
 // Export Type Has
-export type Has<K extends KeyOfAny, T = unknown> = GlobalSet<K, T>
+export type Has<K extends KeyOf | KeyOf[], T = unknown> = K extends KeyOf
+  ? GlobalSet<K, T>
+  : K extends KeyOf[]
+  ? GlobalSet<ValueOf<K>, T>
+  : never
 
 // Return Type of Promise
-export type PromiseThen<T, R = never> = T extends PromiseLike<infer U>
-  ? U
-  : R extends never
-  ? T
-  : R
+export type PromiseThen<T extends Promise<unknown>> = T extends PromiseLike<
+  infer R
+>
+  ? R
+  : never
 
 // Return Type of Async
-export type AsyncThen<T, R = never> = T extends TFunction
-  ? PromiseThen<ReturnType<T>, R>
-  : R extends never
-  ? T
-  : R
+export type AsyncThen<
+  T extends TFunction<unknown[], Promise<unknown>>
+> = T extends TFunction ? PromiseThen<ReturnType<T>> : never
 
 // Return Type of Promise or Async
-export type Then<T, R = never> = T extends TFunction
-  ? AsyncThen<T, R>
-  : PromiseThen<T, R>
+export type Then<T> = T extends Promise<unknown>
+  ? PromiseThen<T>
+  : T extends TFunction<unknown[], Promise<unknown>>
+  ? AsyncThen<T>
+  : never
 
 // Type Of Function
 export type TFunction<A extends unknown[] = unknown[], R = unknown> = (
@@ -75,38 +89,30 @@ export type PrimaryTypeSymbols =
   | 'promise'
   | 'date'
 
+// Type To Iterate
+type SetPrimaryType<
+  V extends PrimaryTypeSymbols,
+  L extends PrimaryTypeSymbols,
+  T
+> = V extends L ? T : never
+
 // Primary Type Generator
-export type PrimaryType<
-  V extends PrimaryTypeSymbols = 'unknown'
-> = V extends 'null'
-  ? null
-  : V extends 'unknown'
-  ? unknown
-  : V extends 'undefined'
-  ? undefined
-  : V extends 'boolean'
-  ? boolean
-  : V extends 'true'
-  ? true
-  : V extends 'false'
-  ? false
-  : V extends 'number'
-  ? number
-  : V extends 'string'
-  ? string
-  : V extends 'symbol'
-  ? symbol
-  : V extends 'object'
-  ? Record<string, unknown>
-  : V extends 'array'
-  ? unknown[]
-  : V extends 'function'
-  ? TFunction
-  : V extends 'promise'
-  ? Promise<unknown>
-  : V extends 'date'
-  ? Date
-  : never
+export type PrimaryType<V extends PrimaryTypeSymbols = 'unknown'> =
+  | SetPrimaryType<V, 'null', null>
+  | SetPrimaryType<V, 'unknown', unknown>
+  | SetPrimaryType<V, 'undefined', undefined>
+  | SetPrimaryType<V, 'boolean', boolean>
+  | SetPrimaryType<V, 'true', true>
+  | SetPrimaryType<V, 'false', false>
+  | SetPrimaryType<V, 'number', number>
+  | SetPrimaryType<V, 'string', string>
+  | SetPrimaryType<V, 'symbol', symbol>
+  | SetPrimaryType<V, 'object', StringSet>
+  | SetPrimaryType<V, 'array', unknown[]>
+  | SetPrimaryType<V, 'function', TFunction>
+  | SetPrimaryType<V, 'promise', Promise<unknown>>
+  | SetPrimaryType<V, 'date', Date>
+  | never
 
 /*
 ##########################################################################################################################
@@ -139,7 +145,7 @@ export function isString(obj: unknown): obj is string {
 }
 
 // Object Type-Guard
-export function isObject(obj: unknown): obj is Record<string, unknown> {
+export function isObject(obj: unknown): obj is StringSet {
   if (isNull(obj) || typeof obj !== 'object') return false
   else return true
 }
@@ -203,8 +209,31 @@ export function is<T extends PrimaryTypeSymbols>(
   else return typeName.some(check)
 }
 
-// General Set Type-Guard
-export function are<K extends KeyOfAny, T extends PrimaryTypeSymbols>(
+// Property Type-Guard
+export function has<K extends KeyOf, T extends PrimaryTypeSymbols>(
+  obj: GlobalSet,
+  key: K | K[],
+  keyType?: T | T[]
+): obj is Intersection<Has<K, PrimaryType<T>>> {
+  // Set Check Function
+  const checkType = (k: KeyOf) => (keyType ? is(obj[k], keyType) : true)
+
+  // Perform Key Check
+  const checkKey = (k: KeyOf) => {
+    if (k in obj) return checkType(k)
+    if (Object.prototype.hasOwnProperty.call(obj, k)) return checkType(k)
+    if (isString(k) && isObject(obj) && Object.keys(obj).includes(k)) {
+      return checkType(k)
+    } else return false
+  }
+
+  // Return Check
+  if (!isArray(key)) return checkKey(key)
+  else return key.every(checkKey)
+}
+
+// General Sets Type-Guard
+export function are<K extends KeyOf, T extends PrimaryTypeSymbols>(
   obj: GlobalSet<K>,
   typeName: T | T[]
 ): obj is GlobalSet<K, PrimaryType<T>> {
@@ -212,21 +241,13 @@ export function are<K extends KeyOfAny, T extends PrimaryTypeSymbols>(
   return Object.values(obj).every(v => is(v, typeName))
 }
 
-// Property Type-Guard
-export function has<K extends KeyOfAny, T extends PrimaryTypeSymbols>(
-  obj: GlobalSet,
-  key: K,
-  keyType?: T
-): obj is Has<K, PrimaryType<T>> {
-  // Set Check Function
-  const check = (k: KeyOfAny) => (keyType ? is(obj[k], keyType) : true)
-
-  // Perform Key Check
-  if (key in obj) return check(key)
-  if (Object.prototype.hasOwnProperty.call(obj, key)) return check(key)
-  if (isString(key) && isObject(obj) && Object.keys(obj).includes(key)) {
-    return check(key)
-  } else return false
+// General Make Type-Guard
+export function test<T>(
+  tg: TFunction<unknown[], boolean>,
+  args: unknown[]
+): obj is T {
+  // Check All
+  return tg(...args)
 }
 
 /*
