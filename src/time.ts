@@ -5,7 +5,7 @@
 */
 
 // Imports
-import { is, guard, Then } from './types'
+import { is, Then } from './types'
 import { pass } from './utils'
 
 /*
@@ -56,9 +56,9 @@ export function waitSync<
   R extends T extends number ? null : Then<T>
 >(mili: T): R {
   // Wait Each Option
-  if (guard<number>(is)(mili, 'number')) return sync(wait(mili))
-  if (guard<Promise<R>>(is)(mili, 'promise')) return sync(mili)
-  if (guard<() => Promise<R>>(is)(mili, 'function')) return sync(mili())
+  if (is(mili, 'number')) return sync(wait(mili as number))
+  if (is(mili, 'promise')) return sync(mili as Promise<R>)
+  if (is(mili, 'function')) return sync(mili() as Promise<R>)
 }
 
 /*
