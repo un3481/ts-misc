@@ -4,15 +4,53 @@
 ##########################################################################################################################
 */
 
+// Check if Type A extends Type B
+export type Extends<A, B> = A extends B ? true : false
+
+// Generates a Type Error For some Expression Evaluating to False
+export type CheckBool<B extends true> = As<B>
+
+/*
+##########################################################################################################################
+#                                                       MISCELLANEOUS                                                    #
+##########################################################################################################################
+*/
+
 // Export Type No-Op
 export type As<T> = T
 
-// Intersection Type
-export type And<U> = (
-  U extends unknown ? (...args: U[]) => void : never
-) extends (...args: As<infer A>[]) => void
-  ? As<A>
-  : never
+// Intersect Type
+export type Intersect<U extends unknown> = As<
+  (U extends unknown ? (...args: U[]) => void : never) extends (
+    ...args: As<infer A>[]
+  ) => void
+    ? As<A>
+    : never
+>
+
+// Join Type
+export type Join<T extends unknown> = As<
+  [Intersect<T>] extends [infer I]
+    ? I extends never
+      ? never
+      : I extends Extra
+      ? {
+          [K in KeyOf<I>]: I[K]
+        }
+      : never
+    : never
+>
+
+// And Type
+export type And<T extends unknown> = As<
+  [Intersect<T>] extends [infer I]
+    ? I extends never
+      ? never
+      : I extends Extra
+      ? Join<I>
+      : I
+    : never
+>
 
 /*
 ##########################################################################################################################
@@ -21,19 +59,19 @@ export type And<U> = (
 */
 
 // Last Item Of Array
-type LastOf<T> = As<
-  And<T extends unknown ? () => T : never> extends As<() => infer R> ? R : never
+export type LastOf<T> = As<
+  And<T extends unknown ? () => T : never> extends () => infer R ? R : never
 >
 
-// Push To Last Element of Type
-type Push<T extends unknown[], V> = [...T, V]
+// Push Into Last Item of Array
+export type Push<T extends unknown[], V> = As<[...T, V]>
 
-// Tuple Of Types
-type TupleOf<
+// Type-Of Tuple
+export type TupleOf<
   T = never,
   L = LastOf<T>,
   N = [T] extends [never] ? true : false
-> = true extends N ? [] : Push<TupleOf<Exclude<T, L>>, L>
+> = As<true extends N ? [] : Push<TupleOf<Exclude<T, L>>, L>>
 
 /*
 ##########################################################################################################################
@@ -41,49 +79,98 @@ type TupleOf<
 ##########################################################################################################################
 */
 
-// Get Base Types
-const typeOf = typeof null
-export type PrimaryTypes = typeof typeOf
+// Default Class Symbols
+export const prototype = Symbol('Prototype')
+
+// New Instance
+export type New<C extends Constructor> = ReturnOf<C>
+
+export interface Constructor<N extends string | symbol = string | symbol> {
+  [Symbol.hasInstance]: Callable<[instance: unknown], boolean>
+  name: N extends string ? N : string
+  (...args: unknown[]): unknown
+}
+
+/*
+##########################################################################################################################
+#                                                       MISCELLANEOUS                                                    #
+##########################################################################################################################
+*/
+
+// Get Primary Types
+const primaryPrototype = typeof null
+export type PrimaryTypes = As<typeof primaryPrototype>
+export type UnusualTypes = keyof UnusualTypesEntries
+
+// Check Primary Types Entries
+type CheckPrimaryTypes = CheckBool<
+  Extends<{ [P in PrimaryTypes]: PrimaryTypesEntries[P] }, PrimaryTypesEntries>
+>
+
+// Set Primary Types Entries
+export type PrimaryTypesEntries = As<{
+  string: string
+  number: number
+  bigint: bigint
+  boolean: boolean
+  symbol: symbol
+  undefined: undefined
+  object: StringSet
+  function: Callable
+}>
+
+// Set Unusual Types Entries
+export type UnusualTypesEntries = As<{
+  never: never
+  unknown: unknown
+  null: null
+  true: true
+  false: false
+  array: unknown[]
+  promise: Promise<unknown>
+  date: Date
+  regexp: RegExp
+  typeof: Types
+  keyof: KeyOf
+  class: Constructor
+  any: unknown
+}>
 
 // Primary Type Symbols
-export type UnusualTypes =
-  | 'never'
-  | 'unknown'
-  | 'null'
-  | 'true'
-  | 'false'
-  | 'array'
-  | 'promise'
-  | 'date'
-
-// Primary Type Symbols
-export type Types = PrimaryTypes | UnusualTypes
-
-// Infer Primary Type
-type InferType<V extends Types, L extends Types, T> = V extends L ? T : never
+export type Types = As<PrimaryTypes | UnusualTypes>
 
 // Primary Type Generator
-export type TypeOfPrimary<V extends PrimaryTypes = PrimaryTypes> =
-  | InferType<V, 'string', string>
-  | InferType<V, 'number', number>
-  | InferType<V, 'bigint', bigint>
-  | InferType<V, 'boolean', boolean>
-  | InferType<V, 'symbol', symbol>
-  | InferType<V, 'undefined', undefined>
-  | InferType<V, 'object', StringSet>
-  | InferType<V, 'function', Callable>
+export type PrimaryType<N extends PrimaryTypes = PrimaryTypes> = As<
+  ValueOf<{ [P in PrimaryTypes]: N extends P ? PrimaryTypesEntries[P] : never }>
+>
 
-// Primary Type Generator
-export type TypeOf<V extends Types = Types> =
-  | (V extends PrimaryTypes ? TypeOfPrimary<V> : never)
-  | InferType<V, 'never', never>
-  | InferType<V, 'unknown', unknown>
-  | InferType<V, 'null', null>
-  | InferType<V, 'true', true>
-  | InferType<V, 'false', false>
-  | InferType<V, 'array', unknown[]>
-  | InferType<V, 'promise', Promise<unknown>>
-  | InferType<V, 'date', Date>
+// Type Generator
+export type Type<N extends Types = Types> = As<
+  N extends UnusualTypes
+    ? ValueOf<
+        { [P in UnusualTypes]: N extends P ? UnusualTypesEntries[P] : never }
+      >
+    : N extends PrimaryTypes
+    ? PrimaryType<N>
+    : never
+>
+
+// Type Name Generator
+export type TypeOf<V extends unknown = unknown> = As<
+  ValueOf<
+    {
+      [P in PrimaryTypes | UnusualTypes]: Type<P> extends infer T
+        ? unknown extends T
+          ? never
+          : V extends T
+          ? T extends V
+            ? P
+            : never
+          : never
+        : never
+    }
+  >
+>
 
 /*
 ##########################################################################################################################
@@ -108,8 +195,13 @@ export type GuardOf<G extends TypeGuard<unknown>> = As<
 
 // Guards Object Type
 export type Guards<K extends Types = Types> = As<
-  And<K extends Types ? Has<K, TypeGuard<TypeOf<K>, []>> : never>
+  And<K extends Types ? Has<K, TypeGuard<Type<K>, []>> : never>
 >
+
+// Interface
+export interface Is extends Guards {
+  <T extends Types>(obj: unknown, typeName: T | T[]): obj is Type<T>
+}
 
 /*
 ##########################################################################################################################
@@ -119,7 +211,7 @@ export type Guards<K extends Types = Types> = As<
 
 // Type-Of Primary Key
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type KeyOfPrimary = keyof any
+type KeyOfPrimary = As<keyof any>
 
 // Type-Of Record Key
 export type KeyOf<T extends Extra = Extra> = As<
@@ -168,27 +260,22 @@ export type EntrieOf<T extends [KeyOf, ValueOf][] = [KeyOf, ValueOf][]> = As<
 */
 
 // Type-Of Indexable Record
-export type Index<K extends KeyOfPrimary = KeyOfPrimary, T = unknown> = As<
-  K extends symbol
-    ? { [P in symbol]: T }
-    : K extends string
-    ? { [x: string]: T }
-    : K extends number
-    ? { [x: number]: T }
-    : never
->
+export type StringSet<T = ValueOf> = As<{ [x: string]: T }>
+export type NumberSet<T = ValueOf> = As<{ [x: number]: T }>
+export type AnySet<T = unknown> = As<{
+  [x: string]: T
+  [x: number]: T
+}>
 
 // Type-Of Extendable Record
 export type Extra<K extends KeyOfPrimary = KeyOfPrimary, T = unknown> = As<
-  { [P in K]: T } & Index<K, T>
+  { [P in K]: T } & AnySet<T>
 >
 
-// Type-Of Indexed Set
-export type StringSet<T = ValueOf> = As<{ [x: string]: T }>
-export type NumberSet<T = ValueOf> = As<{ [x: number]: T }>
-
 // Type-Of Has
-export type Has<K extends KeyOf = KeyOf, T = ValueOf> = As<{ [P in K]: T }>
+export type Has<K extends KeyOf, T extends ValueOf = ValueOf, O = unknown> = As<
+  And<{ [P in K]: T } & O>
+>
 
 /*
 ##########################################################################################################################
@@ -207,7 +294,7 @@ export type ArgOf<F extends Callable = Callable> = As<
 >
 
 // Type Of Return Of Function
-export type ReturnOf<F extends Callable = Callable> = ReturnType<F>
+export type ReturnOf<F extends Callable = Callable> = As<ReturnType<F>>
 
 /*
 ##########################################################################################################################
@@ -216,233 +303,37 @@ export type ReturnOf<F extends Callable = Callable> = ReturnType<F>
 */
 
 // Return Type of Promise
-export type PromiseThen<T extends Promise<unknown>> = T extends PromiseLike<
-  infer R
+export type PromiseThen<T extends Promise<unknown>> = As<
+  T extends PromiseLike<infer R> ? R : never
 >
-  ? R
-  : never
 
 // Return Type of Async
-export type AsyncThen<
-  T extends Callable<unknown[], Promise<unknown>>
-> = PromiseThen<ReturnOf<T>>
+export type AsyncThen<T extends Callable<unknown[], Promise<unknown>>> = As<
+  PromiseThen<ReturnOf<T>>
+>
 
 // Return Type of Promise or Async
-export type Then<T> = T extends Promise<unknown>
-  ? PromiseThen<T>
-  : T extends Callable<unknown[], Promise<unknown>>
-  ? AsyncThen<T>
-  : never
+export type Then<T> = As<
+  T extends Promise<unknown>
+    ? PromiseThen<T>
+    : T extends Callable<unknown[], Promise<unknown>>
+    ? AsyncThen<T>
+    : never
+>
 
 // Return Type of Promise
-export type PromiseAwait<T> = T extends Promise<unknown>
-  ? PromiseAwait<PromiseThen<T>>
-  : T
+export type PromiseAwait<T> = As<
+  T extends Promise<unknown> ? PromiseAwait<PromiseThen<T>> : T
+>
 
 // Return Type of Await Promise or Async
-export type Await<T> =
-  | PromiseAwait<T>
-  | (T extends Promise<unknown>
-      ? PromiseAwait<T>
-      : T extends Callable<unknown[], Promise<unknown>>
-      ? PromiseAwait<ReturnOf<T>>
-      : T)
-
-/*
-##########################################################################################################################
-#                                                       MISCELLANEOUS                                                    #
-##########################################################################################################################
-*/
-
-// General Make Type-Guard
-export function extend<T>(obj: unknown): obj is As<T> {
-  return true
-}
-
-// General Set Type-Guard
-export function guard<T>(tg: TypeGuardShape): TypeGuard<T> {
-  if (extend<TypeGuard<T>>(tg)) return tg
-}
-
-/*
-##########################################################################################################################
-#                                                       MISCELLANEOUS                                                    #
-##########################################################################################################################
-*/
-
-// Primary Type-Guard Proxy
-export const primaryGuards = new Proxy(
-  {},
-  {
-    get(target, name: Types) {
-      if (Object.hasOwnProperty.call(target, name)) return target[name]
-      else {
-        return (obj: unknown): obj is TypeOf<typeof name> => {
-          return typeof obj === name
-        }
-      }
-    }
-  }
-) as Guards<PrimaryTypes>
-
-// Unusual Type-Guard Record
-export const unusualGuards: Guards<UnusualTypes> = {
-  never: (obj => false && obj) as TypeGuard<never>,
-  unknown: (obj => true || obj) as TypeGuard<unknown>,
-  null: (obj => obj === null || obj === undefined) as TypeGuard<null>,
-  true: (obj => obj === true) as TypeGuard<true>,
-  false: (obj => obj === false) as TypeGuard<false>,
-  array: (obj => Array.isArray(obj)) as TypeGuard<unknown[]>,
-  promise: (obj => obj instanceof Promise) as TypeGuard<Promise<unknown>>,
-  date: (obj => obj instanceof Date) as TypeGuard<Date>
-}
-
-// General Type-Guard Proxy
-export const guards = new Proxy(unusualGuards, {
-  get(target, name: Types) {
-    if (Object.hasOwnProperty.call(target, name)) return target[name]
-    else return primaryGuards[name]
-  }
-}) as Guards
-
-/*
-##########################################################################################################################
-#                                                       MISCELLANEOUS                                                    #
-##########################################################################################################################
-*/
-
-// General Type-Guard
-export function is<T extends Types>(
-  obj: unknown,
-  typeName: T | T[]
-): obj is TypeOf<T> {
-  // Set Check Function
-  const checkType = (t: T) => guards[t](obj)
-  // Return Check
-  if (!guards.array(typeName)) return checkType(typeName)
-  else return typeName.some(checkType)
-}
-
-// Property Type-Guard
-export function has<K extends KeyOf, T extends Types>(
-  obj: Extra,
-  key: K | K[],
-  typeName?: T | T[]
-): obj is Has<K, TypeOf<T>> {
-  // Set Check Function
-  const checkType = <K extends KeyOf>(
-    o: Extra<KeyOf>,
-    k: K
-  ): o is Has<K, TypeOf<T>> => (typeName ? is(o[k], typeName) : true)
-
-  // Perform Key Check
-  const checkKey = (o: Extra, k: KeyOf): o is Has<K, unknown> => {
-    if (k in o) return checkType(o, k)
-    if (Object.prototype.hasOwnProperty.call(o, k)) return checkType(o, k)
-    if (is(k, 'string') && Object.keys(o).includes(k)) return checkType(o, k)
-    else return false
-  }
-
-  // Return Check
-  if (!is(key, 'array')) return checkKey(obj, key)
-  else return key.every(k => checkKey(obj, k))
-}
-
-// General Sets Type-Guard
-export function are<K extends KeyOf, T extends Types>(
-  obj: Extra<K>,
-  typeName: T | T[]
-): obj is Extra<K, TypeOf<T>> {
-  // Check All
-  return Object.values(obj).every(v => is(v, typeName))
-}
-
-/*
-##########################################################################################################################
-#                                                       MISCELLANEOUS                                                    #
-##########################################################################################################################
-*/
-
-// Function Return Type-Guard
-export function isReturn<R extends Types>(
-  typeName: R
-): <A extends ArgOf>(
-  obj: Callable<A>,
-  ...args: A
-) => obj is Callable<A, TypeOf<R>> {
-  // Set Type-Guard
-  const typeGuard = <A extends ArgOf>(
-    obj: Callable<A>,
-    ...args: A
-  ): obj is Callable<A, TypeOf<R>> => is(obj(...args), typeName)
-
-  // Return Type-Guard
-  return typeGuard
-}
-
-/*
-##########################################################################################################################
-#                                                       MISCELLANEOUS                                                    #
-##########################################################################################################################
-*/
-
-export type ValidatorTypes =
-  | 'string'
-  | 'boolean'
-  | 'number'
-  | 'array'
-  | 'string?'
-  | 'boolean?'
-  | 'number?'
-
-export type ValidatorDefinition<T> = {
-  [key in keyof T]: T[key] extends string
-    ? 'string' | 'string?'
-    : T[key] extends number
-    ? 'number' | 'number?'
-    : T[key] extends boolean
-    ? 'boolean' | 'boolean?'
-    : T[key] extends Array<infer TArrayItem>
-    ? Array<ValidatorDefinition<TArrayItem>>
-    : ValidatorTypes
-}
-
-export function typeGuardFactory<T>(
-  reference: ValidatorDefinition<T>
-): (value: unknown) => value is T {
-  const validators: ((propertyValue: unknown) => boolean)[] = Object.keys(
-    reference
-  ).map(key => {
-    const referenceValue = (<unknown>reference)[key]
-    switch (referenceValue) {
-      case 'string':
-        return v => typeof v[key] === 'string'
-      case 'boolean':
-        return v => typeof v[key] === 'boolean'
-      case 'number':
-        return v => typeof v[key] === 'number'
-      case 'string?':
-        return v => v[key] == null || typeof v[key] === 'string'
-      case 'boolean?':
-        return v => v[key] == null || typeof v[key] === 'boolean'
-      case 'number?':
-        return v => v[key] == null || typeof v[key] === 'number'
-      default:
-        // we are not accepting null/undefined for empty array... Should decide how to
-        // handle/configure the specific case
-        if (Array.isArray(referenceValue)) {
-          const arrayItemValidator = typeGuardFactory<unknown>(
-            referenceValue[0]
-          )
-          return v => Array.isArray(v[key]) && v[key].every(arrayItemValidator)
-        }
-        // TODO: handle default case
-        return _v => false && _v
-    }
-  })
-  return (value: T): value is T =>
-    (value && validators.every(validator => validator(value))) || false
-}
+export type Await<T> = As<
+  T extends Promise<unknown>
+    ? PromiseAwait<T>
+    : T extends Callable<unknown[], Promise<unknown>>
+    ? PromiseAwait<ReturnOf<T>>
+    : T
+>
 
 /*
 ##########################################################################################################################
