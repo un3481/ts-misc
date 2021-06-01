@@ -99,7 +99,7 @@ export interface Constructor<N extends string | symbol = string | symbol> {
 
 // Get Primary Types
 const primaryPrototype = typeof null
-export type PrimaryTypes = As<typeof primaryPrototype>
+export type PrimaryTypes = typeof primaryPrototype
 export type UnusualTypes = keyof UnusualTypesEntries
 
 // Check Primary Types Entries
