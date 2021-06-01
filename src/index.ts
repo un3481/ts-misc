@@ -8,7 +8,7 @@
 import * as numbers from './numbers'
 import * as handle from './handle'
 import * as types from './types'
-import * as time from './time'
+import * as sync from './sync'
 import * as sets from './sets'
 
 /*
@@ -23,7 +23,7 @@ export default class Miscellaneous {
   numbers = numbers
   handle = handle
   types = types
-  time = time
+  sync = sync
   sets = sets
 
   // Allow Info Inside Misc

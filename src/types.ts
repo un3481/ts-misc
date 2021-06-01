@@ -103,6 +103,7 @@ export type PrimaryTypes = As<typeof primaryPrototype>
 export type UnusualTypes = keyof UnusualTypesEntries
 
 // Check Primary Types Entries
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 type CheckPrimaryTypes = CheckBool<
   Extends<{ [P in PrimaryTypes]: PrimaryTypesEntries[P] }, PrimaryTypesEntries>
 >

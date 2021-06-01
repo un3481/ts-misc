@@ -5,8 +5,9 @@
 */
 
 // Imports
-import { is, Then } from './types'
 import { pass } from './utils'
+import { Then } from './types'
+import { is } from './guards'
 
 /*
 ##########################################################################################################################

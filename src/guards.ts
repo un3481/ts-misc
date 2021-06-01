@@ -44,8 +44,8 @@ export function guard<T>(tg: TypeGuardShape): TypeGuard<T> {
 */
 
 // Get Type-Of Object using 'ToString' Method
-export function typeOf(obj: unknown): Types {
-  return {}.toString
+export function typeOf(obj: unknown): string {
+  return Object.toString
     .call(obj)
     .match(/\s([a-zA-Z]+)/)[1]
     .toLowerCase()
@@ -53,7 +53,11 @@ export function typeOf(obj: unknown): Types {
 
 // Check Primary Types
 const istype = (obj: unknown, to: string, io: Callable = null) => {
-  return typeof obj === to || io ? obj instanceof io : obj === undefined
+  return (
+    typeof obj === to ||
+    typeOf(obj) === to ||
+    (io ? obj instanceof io : obj === undefined)
+  )
 }
 
 // Primary Type-Guard Proxy

@@ -4,7 +4,8 @@
 ##########################################################################################################################
 */
 
-import { is, GlobalSet, KeyOf } from './types'
+import { Extra, KeyOf } from './types'
+import { is } from './guards'
 
 /*
 ##########################################################################################################################
@@ -13,7 +14,7 @@ import { is, GlobalSet, KeyOf } from './types'
 */
 
 // Get Random Item of Array
-export function rand<T>(arr: GlobalSet<KeyOf, T>): T {
+export function rand<T>(arr: Extra<KeyOf, T>): T {
   const keys = Object.keys(arr)
   const k = keys[Math.floor(Math.random() * keys.length)]
   return arr[k]

@@ -5,8 +5,8 @@
 */
 
 // Imports
-import { Await, TFunction, extend } from './types'
-import { wait, waitSync } from './time'
+import { wait, waitSync } from './sync'
+import { Await, Callable } from './types'
 
 /*
 ##########################################################################################################################
@@ -17,8 +17,8 @@ import { wait, waitSync } from './time'
 // Safe Execution Types
 export type TSafeReturn<T> = [T, Error]
 export type TSafeAsyncReturn<T> = Promise<TSafeReturn<T>>
-export type TSafe<A extends unknown[], R> = TFunction<A, TSafeAsyncReturn<R>>
-export type TSafeSync<A extends unknown[], R> = TFunction<A, TSafeReturn<R>>
+export type TSafe<A extends unknown[], R> = Callable<A, TSafeAsyncReturn<R>>
+export type TSafeSync<A extends unknown[], R> = Callable<A, TSafeReturn<R>>
 
 /*
 ##########################################################################################################################
@@ -124,8 +124,7 @@ export function repeatSync<T>(
   delay = 1
 ): TSafeReturn<Await<T>> {
   const callSync = safeSync(repeat)
-  const value = callSync(exec, verify, loop, delay)
-  if (extend<TSafeReturn<Await<T>>>(value)) return value
+  return callSync(exec, verify, loop, delay) as TSafeReturn<Await<T>>
 }
 
 /*
