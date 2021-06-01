@@ -1,3 +1,9 @@
+/*
+##########################################################################################################################
+#                                                       MISCELLANEOUS                                                    #
+##########################################################################################################################
+*/
+
 import type {
   As,
   Is,
@@ -10,7 +16,6 @@ import type {
   TypeGuard,
   Callable,
   Guards,
-  StringSet,
   Extra,
   Has,
   KeyOf,
@@ -51,38 +56,50 @@ export function typeOf(obj: unknown): string {
     .toLowerCase()
 }
 
+/*
+##########################################################################################################################
+#                                                       MISCELLANEOUS                                                    #
+##########################################################################################################################
+*/
+
 // Check Primary Types
-const istype = (obj: unknown, to: string, io: Callable = null) => {
-  return (
-    typeof obj === to ||
-    typeOf(obj) === to ||
-    (io ? obj instanceof io : obj === undefined)
-  )
+const makeIs = <N extends Types>(
+  typeName: N,
+  constructor: Callable = null
+): TypeGuard<Type<N>, []> => {
+  // Set Guard
+  const tg = obj =>
+    typeof obj === typeName ||
+    typeOf(obj) === typeName ||
+    (constructor ? obj instanceof constructor : obj === undefined)
+  // Return As
+  return tg as TypeGuard<Type<N>, []>
 }
 
 // Primary Type-Guard Proxy
 export const primaryGuards: Guards<PrimaryTypes> = {
-  string: (obj => istype(obj, 'string', String)) as TypeGuard<string>,
-  number: (obj => istype(obj, 'number', Number)) as TypeGuard<number>,
-  bigint: (obj => istype(obj, 'bigint', BigInt)) as TypeGuard<bigint>,
-  boolean: (obj => istype(obj, 'boolean', Boolean)) as TypeGuard<boolean>,
-  symbol: (obj => istype(obj, 'symbol', Symbol)) as TypeGuard<symbol>,
-  undefined: (obj => istype(obj, 'undefined')) as TypeGuard<undefined>,
-  object: (obj => istype(obj, 'object', Object)) as TypeGuard<StringSet>,
-  function: (obj => istype(obj, 'function', Function)) as TypeGuard<Callable>
+  undefined: makeIs('undefined'),
+  string: makeIs('string', String),
+  number: makeIs('number', Number),
+  bigint: makeIs('bigint', BigInt),
+  symbol: makeIs('symbol', Symbol),
+  object: makeIs('object', Object),
+  boolean: makeIs('boolean', Boolean),
+  function: makeIs('function', Function)
 }
 
 // Unusual Type-Guard Record
 export const unusualGuards: Guards<UnusualTypes> = {
   never: (obj => false && obj) as TypeGuard<never>,
-  unknown: (obj => true || obj) as TypeGuard<unknown>,
-  null: (obj => obj === null || obj === undefined) as TypeGuard<null>,
+  any: (obj => true || obj) as TypeGuard<unknown>,
   true: (obj => obj === true) as TypeGuard<true>,
   false: (obj => obj === false) as TypeGuard<false>,
-  array: (obj => Array.isArray(obj)) as TypeGuard<unknown[]>,
-  promise: (obj => obj instanceof Promise) as TypeGuard<Promise<unknown>>,
+  unknown: (obj => true || obj) as TypeGuard<unknown>,
   date: (obj => obj instanceof Date) as TypeGuard<Date>,
-  regexp: (obj => false && obj) as TypeGuard<RegExp>,
+  array: (obj => Array.isArray(obj)) as TypeGuard<unknown[]>,
+  regexp: (obj => obj instanceof RegExp) as TypeGuard<RegExp>,
+  null: (obj => obj === null || obj === undefined) as TypeGuard<null>,
+  promise: (obj => obj instanceof Promise) as TypeGuard<Promise<unknown>>,
   typeof: (obj =>
     primaryGuards.string(obj) &&
     (obj in primaryGuards || obj in unusualGuards)) as TypeGuard<Types>,
@@ -96,8 +113,7 @@ export const unusualGuards: Guards<UnusualTypes> = {
       return false
     }
     return true
-  }) as TypeGuard<Constructor>,
-  any: (obj => true || obj) as TypeGuard<unknown>
+  }) as TypeGuard<Constructor>
 }
 
 // General Type-Guard Proxy
@@ -149,7 +165,9 @@ export function has<
   const checkType = <K extends KeyOf>(
     o: unknown,
     k: K
-  ): o is Has<K, TypeOf<T>, O> => (typeName ? is(o[k], typeName) : true)
+  ): o is Has<K, TypeOf<T>, O> => {
+    return typeName ? is(o[k], typeName) : true
+  }
 
   // Perform Key Check
   const checkKey = (o: unknown, k: KeyOf): o is Has<K, TypeOf<T>, O> => {
@@ -164,6 +182,12 @@ export function has<
   if (!is.array(key)) return checkKey(obj, key)
   else return key.every(k => checkKey(obj, k))
 }
+
+/*
+##########################################################################################################################
+#                                                       MISCELLANEOUS                                                    #
+##########################################################################################################################
+*/
 
 // General Sets Type-Guard
 export function are<K extends KeyOf, T extends Types>(
