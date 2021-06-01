@@ -133,6 +133,12 @@ Object.defineProperties(
 // General Type-Guard
 export const is = isGuard as Is
 
+/*
+##########################################################################################################################
+#                                                       MISCELLANEOUS                                                    #
+##########################################################################################################################
+*/
+
 // Property Type-Guard
 export function has<
   O = unknown,
@@ -147,10 +153,10 @@ export function has<
 
   // Perform Key Check
   const checkKey = (o: unknown, k: KeyOf): o is Has<K, TypeOf<T>, O> => {
-    if (!is(o, 'object')) return false
+    if (!is.object(o)) return false
     if (k in o) return checkType(o, k)
     if (Object.prototype.hasOwnProperty.call(o, k)) return checkType(o, k)
-    if (is(k, 'string') && Object.keys(o).includes(k)) return checkType(o, k)
+    if (is.string(k) && Object.keys(o).includes(k)) return checkType(o, k)
     else return false
   }
 
