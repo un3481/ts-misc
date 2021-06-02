@@ -88,7 +88,7 @@ export type New<C extends Constructor> = ReturnOf<C>
 export interface Constructor<N extends string | symbol = string | symbol> {
   [Symbol.hasInstance]: Callable<[instance: unknown], boolean>
   name: N extends string ? N : string
-  (...args: unknown[]): unknown
+  (...args: ArgOf): unknown
 }
 
 /*
@@ -181,7 +181,7 @@ export type TypeOf<V extends unknown = unknown> = As<
 
 // Type-Guard Interface
 export type TypeGuardShape<A extends ArgOf = ArgOf> = As<
-  (obj: unknown, ...args: A) => boolean
+  Callable<[obj: unknown, ...args: A], boolean>
 >
 
 // Generic Type-Guard Type
@@ -212,7 +212,7 @@ export interface Is extends Guards {
 
 // Type-Of Primary Key
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type KeyOfPrimary = As<keyof any>
+type KeyOfPrimary = keyof any
 
 // Type-Of Record Key
 export type KeyOf<T extends Extra = Extra> = As<
@@ -284,17 +284,17 @@ export type Has<K extends KeyOf, T extends ValueOf = ValueOf, O = unknown> = As<
 ##########################################################################################################################
 */
 
-// Type Of Function
+// Type-Of Function
 export type Callable<A extends unknown[] = unknown[], R = unknown> = As<
   (...args: A) => R
 >
 
-// Type Of Args Of Function
+// Type-Of Function Args
 export type ArgOf<F extends Callable = Callable> = As<
   F extends Callable<infer A> ? A : never
 >
 
-// Type Of Return Of Function
+// Type-Of Function Return
 export type ReturnOf<F extends Callable = Callable> = As<ReturnType<F>>
 
 /*
@@ -309,7 +309,7 @@ export type PromiseThen<T extends Promise<unknown>> = As<
 >
 
 // Return Type of Async
-export type AsyncThen<T extends Callable<unknown[], Promise<unknown>>> = As<
+export type AsyncThen<T extends Callable<ArgOf, Promise<unknown>>> = As<
   PromiseThen<ReturnOf<T>>
 >
 
@@ -317,7 +317,7 @@ export type AsyncThen<T extends Callable<unknown[], Promise<unknown>>> = As<
 export type Then<T> = As<
   T extends Promise<unknown>
     ? PromiseThen<T>
-    : T extends Callable<unknown[], Promise<unknown>>
+    : T extends Callable<ArgOf, Promise<unknown>>
     ? AsyncThen<T>
     : never
 >
@@ -331,7 +331,7 @@ export type PromiseAwait<T> = As<
 export type Await<T> = As<
   T extends Promise<unknown>
     ? PromiseAwait<T>
-    : T extends Callable<unknown[], Promise<unknown>>
+    : T extends Callable<ArgOf, Promise<unknown>>
     ? PromiseAwait<ReturnOf<T>>
     : T
 >

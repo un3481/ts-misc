@@ -4,7 +4,7 @@
 ##########################################################################################################################
 */
 
-import { has, extend } from './guards'
+import { has, extend, is } from './guards'
 
 /*
 ##########################################################################################################################
@@ -77,14 +77,16 @@ export function typeGuardFactory<T>(
 */
 
 // Tests
+let a
 const e = { e: 1, e2: 2 }
 if (!extend<{ e3: number }, typeof e>(e)) throw Error
 e.e3 = 4
+
+// Is with key or array
+if (is.string(a) || is.number(a)) console.log(a)
+if (is(a, ['string', 'number'])) console.log(a)
+
 // Has without type declaration (good)
-if (has(e, 'e4', 'string')) {
-  console.log(e)
-}
+if (has(e, 'e4', 'string')) console.log(e)
 // Has with type declaration (broken infer)
-if (has<typeof e>(e, 'e4', 'string')) {
-  console.log(e)
-}
+if (has<typeof e>(e, 'e4', 'string')) console.log(e)
