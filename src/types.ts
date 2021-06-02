@@ -116,7 +116,7 @@ export type PrimaryTypesEntries = As<{
   boolean: boolean
   symbol: symbol
   undefined: undefined
-  object: StringSet
+  object: AnySet
   function: Callable
 }>
 

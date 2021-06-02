@@ -5,12 +5,12 @@ import type {
   Types,
   PrimaryTypes,
   UnusualTypes,
-  Constructor,
   TypeGuardShape,
   TypeGuard,
   Callable,
+  Constructor,
   Guards,
-  StringSet,
+  AnySet,
   Extra,
   Has,
   KeyOf,
@@ -68,7 +68,7 @@ export const primaryGuards: Guards<PrimaryTypes> = {
   boolean: (obj => istype(obj, 'boolean', Boolean)) as TypeGuard<boolean>,
   symbol: (obj => istype(obj, 'symbol', Symbol)) as TypeGuard<symbol>,
   undefined: (obj => istype(obj, 'undefined')) as TypeGuard<undefined>,
-  object: (obj => istype(obj, 'object', Object)) as TypeGuard<StringSet>,
+  object: (obj => istype(obj, 'object', Object)) as TypeGuard<AnySet>,
   function: (obj => istype(obj, 'function', Function)) as TypeGuard<Callable>
 }
 
