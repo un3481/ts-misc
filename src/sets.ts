@@ -4,8 +4,8 @@
 ##########################################################################################################################
 */
 
-import { Extra, KeyOf } from './types'
-import { is } from './guards'
+import { Extra, KeyOf, ValueOf, ReadonlyIncluded } from './types.js'
+import { is } from './guards.js'
 
 /*
 ##########################################################################################################################
@@ -14,10 +14,12 @@ import { is } from './guards'
 */
 
 // Get Random Item of Array
-export function rand<T>(arr: Extra<KeyOf, T>): T {
+export function rand<T extends ValueOf>(
+  arr: ReadonlyIncluded<Extra<KeyOf, T> | Array<T>>
+): T {
   const keys = Object.keys(arr)
   const k = keys[Math.floor(Math.random() * keys.length)]
-  return arr[k]
+  return arr[k] as T
 }
 
 // Generate new Serial Object
@@ -30,11 +32,11 @@ export function generate<T>(
 
 // Remove Cyclic References from Object
 export function serialize<T>(obj: T): T {
-  const seen = new WeakSet()
+  const seen = []
   const getCircularReplacer = (k, value) => {
-    if (is(value, 'object')) {
-      if (seen.has(value)) return
-      else seen.add(value)
+    if (is.object(value)) {
+      if (seen.indexOf(value) !== -1) return
+      else seen.push(value)
     }
     return value
   }

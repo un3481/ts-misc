@@ -21,8 +21,9 @@ import type {
   KeyOf,
   ArgOf,
   TypeOf,
-  Type
-} from './types'
+  Type,
+  IsType
+} from './types.js'
 
 /*
 ##########################################################################################################################
@@ -69,8 +70,8 @@ const makeIs = <N extends Types>(
 ): TypeGuard<Type<N>, []> => {
   // Set Guard
   const tg = obj =>
+    // eslint-disable-next-line valid-typeof
     typeof obj === typeName ||
-    typeOf(obj) === typeName ||
     (constructor ? obj instanceof constructor : obj === undefined)
   // Return As
   return tg as TypeGuard<Type<N>, []>
@@ -129,25 +130,13 @@ const guards: Guards = {
 */
 
 // Define General Guard
-const isGuard = (obj, typeName) => {
+const isType = ((obj, typeName) => {
   // Set Check Function
   const checkType = t => guards[t](obj)
   // Return Check
   if (!guards.array(typeName)) return checkType(typeName)
   else return typeName.some(checkType)
-}
-
-// Assign Methods to General Guard
-Object.defineProperties(
-  isGuard,
-  Object.getOwnPropertyDescriptors({
-    ...primaryGuards,
-    ...unusualGuards
-  })
-)
-
-// General Type-Guard
-export const is = isGuard as Is
+}) as IsType
 
 /*
 ##########################################################################################################################
@@ -159,27 +148,28 @@ export const is = isGuard as Is
 export function has<
   O = unknown,
   K extends KeyOf = KeyOf,
-  T extends Types = Types
+  T extends Types = 'unknown'
 >(obj: unknown, key: K | K[], typeName?: T | T[]): obj is Has<K, Type<T>, O> {
   // Set Check Function
   const checkType = <K extends KeyOf>(
     o: unknown,
     k: K
   ): o is Has<K, TypeOf<T>, O> => {
-    return typeName ? is(o[k], typeName) : true
+    return typeName ? isType(o[k], typeName) : true
   }
 
   // Perform Key Check
   const checkKey = (o: unknown, k: KeyOf): o is Has<K, TypeOf<T>, O> => {
-    if (!is.object(o)) return false
+    if (!guards.object(o)) return false
     if (k in o) return checkType(o, k)
     if (Object.prototype.hasOwnProperty.call(o, k)) return checkType(o, k)
-    if (is.string(k) && Object.keys(o).includes(k)) return checkType(o, k)
-    else return false
+    if (guards.string(k) && Object.keys(o).includes(k)) {
+      return checkType(o, k)
+    } else return false
   }
 
   // Return Check
-  if (!is.array(key)) return checkKey(obj, key)
+  if (!guards.array(key)) return checkKey(obj, key)
   else return key.every(k => checkKey(obj, k))
 }
 
@@ -195,8 +185,27 @@ export function are<K extends KeyOf, T extends Types>(
   typeName: T | T[]
 ): obj is Extra<K, TypeOf<T>> {
   // Check All
-  return Object.values(obj).every(v => is(v, typeName))
+  return Object.values(obj).every(v => isType(v, typeName))
 }
+
+/*
+##########################################################################################################################
+#                                                       MISCELLANEOUS                                                    #
+##########################################################################################################################
+*/
+
+// Assign Methods to General Guard
+Object.defineProperties(
+  isType,
+  Object.getOwnPropertyDescriptors({
+    ...guards,
+    in: has,
+    every: are
+  })
+)
+
+// General Type-Guard
+export const is = isType as Is
 
 /*
 ##########################################################################################################################

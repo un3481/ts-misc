@@ -5,9 +5,9 @@
 */
 
 // Imports
-import { pass } from './utils'
-import { Then } from './types'
-import { is } from './guards'
+import { pass } from './utils.js'
+import { Then } from './types.js'
+import { is } from './guards.js'
 
 /*
 ##########################################################################################################################
@@ -24,7 +24,11 @@ export function timestamp(): string {
 
 // Wait Seconds
 export function wait(mili: number): Promise<null> {
-  return new Promise(resolve => setTimeout(resolve, mili))
+  return new Promise(resolve =>
+    setTimeout(v => {
+      resolve(v)
+    }, mili)
+  )
 }
 
 // Wait for Promise

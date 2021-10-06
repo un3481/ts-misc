@@ -52,6 +52,9 @@ export type And<T extends unknown> = As<
     : never
 >
 
+// Readonly Included Type
+export type ReadonlyIncluded<T> = T | Readonly<T>
+
 /*
 ##########################################################################################################################
 #                                                       MISCELLANEOUS                                                    #
@@ -194,15 +197,43 @@ export type GuardOf<G extends TypeGuard<unknown>> = As<
   G extends TypeGuard<infer T> ? T : never
 >
 
+// Is-Type Type
+export type IsType = <T extends Types>(
+  obj: unknown,
+  typeName: T | T[]
+) => obj is Type<T>
+
 // Guards Object Type
 export type Guards<K extends Types = Types> = As<
   And<K extends Types ? Has<K, TypeGuard<Type<K>, []>> : never>
 >
 
-// Interface
-export interface Is extends Guards {
-  <T extends Types>(obj: unknown, typeName: T | T[]): obj is Type<T>
-}
+// Set-Has Guard
+type GuardSetHas = <
+  O = unknown,
+  K extends KeyOf = KeyOf,
+  T extends Types = 'unknown'
+>(
+  obj: unknown,
+  key: K | K[],
+  typeName?: T | T[]
+) => obj is Has<K, Type<T>, O>
+
+// Set-Every Guard
+type GuardSetEvery = <K extends KeyOf, T extends Types>(
+  obj: Extra<K>,
+  typeName: T | T[]
+) => obj is Extra<K, TypeOf<T>>
+
+// Super-Guards Object Type
+export type SuperGuards<
+  K extends Types | 'in' | 'every' = Types | 'in' | 'every'
+> = As<
+  And<K extends Types ? Guards<K> : { in: GuardSetHas; every: GuardSetEvery }>
+>
+
+// Is Interface
+export interface Is extends SuperGuards, IsType {}
 
 /*
 ##########################################################################################################################

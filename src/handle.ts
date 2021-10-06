@@ -5,8 +5,8 @@
 */
 
 // Imports
-import { wait, waitSync } from './sync'
-import { Await, Callable } from './types'
+import { wait, waitSync } from './sync.js'
+import { Await, Callable } from './types.js'
 
 /*
 ##########################################################################################################################

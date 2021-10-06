@@ -5,11 +5,12 @@
 */
 
 // Imports
-import * as numbers from './numbers'
-import * as handle from './handle'
-import * as types from './types'
-import * as sync from './sync'
-import * as sets from './sets'
+import * as numbers from './numbers.js'
+import * as handle from './handle.js'
+import * as guards from './guards.js'
+import * as types from './types.js'
+import * as sync from './sync.js'
+import * as sets from './sets.js'
 
 /*
 ##########################################################################################################################
@@ -22,6 +23,7 @@ export default class Miscellaneous {
   // Miscellaneous Set
   numbers = numbers
   handle = handle
+  guards = guards
   types = types
   sync = sync
   sets = sets

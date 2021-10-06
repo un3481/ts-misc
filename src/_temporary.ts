@@ -87,6 +87,6 @@ if (is.string(a) || is.number(a)) console.log(a)
 if (is(a, ['string', 'number'])) console.log(a)
 
 // Has without type declaration (good)
-if (has(e, 'e4', 'string')) console.log(e)
+if (is.in(e, 'e4', 'string')) console.log(e)
 // Has with type declaration (broken infer)
-if (has<typeof e>(e, 'e4', 'string')) console.log(e)
+if (is.in<typeof e>(e, 'e4', 'string')) console.log(e)
