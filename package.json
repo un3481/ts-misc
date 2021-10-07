@@ -1,6 +1,6 @@
 {
-  "name": "miscellaneous",
-  "version": "1.1.0",
+  "name": "ts-misc",
+  "version": "1.1.1",
   "description": "Miscellaneous library to simplify Typescript code",
   "type": "module",
   "main": "dist/index.js",
