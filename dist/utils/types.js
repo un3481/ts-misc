@@ -9,7 +9,8 @@
 ##########################################################################################################################
 */
 // Default Class Symbols
-export const prototype = Symbol('Prototype');
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const prototype = Symbol('Prototype');
 /*
 ##########################################################################################################################
 #                                                       MISCELLANEOUS                                                    #
@@ -17,6 +18,7 @@ export const prototype = Symbol('Prototype');
 */
 // Get Primary Types
 const primaryPrototype = typeof null;
+export {};
 /*
 ##########################################################################################################################
 #                                                       MISCELLANEOUS                                                    #

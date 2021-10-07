@@ -83,7 +83,8 @@ export type TupleOf<
 */
 
 // Default Class Symbols
-export const prototype = Symbol('Prototype')
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const prototype = Symbol('Prototype')
 
 // New Instance
 export type New<C extends Constructor> = ReturnOf<C>

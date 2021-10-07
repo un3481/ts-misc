@@ -14,7 +14,6 @@ export declare type ReadonlyIncluded < T > = T | Readonly < T > ;
 export declare type LastOf < T > = As < And < T extends unknown ? () => T : never > extends() => infer R ? R : never > ;
 export declare type Push < T extends unknown[], V > = As < [...T, V] > ;
 export declare type TupleOf < T = never, L = LastOf < T > , N = [T] extends[never] ? true : false > = As < true extends N ? [] : Push < TupleOf < Exclude < T, L >> , L >> ;
-export declare const prototype: unique symbol;
 export declare type New < C extends Constructor > = ReturnOf < C > ;
 export interface Constructor < N extends string | symbol = string | symbol > {
   [Symbol.hasInstance]: Callable < [instance: unknown],
