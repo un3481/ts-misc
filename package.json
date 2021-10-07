@@ -1,6 +1,7 @@
 {
   "name": "miscellaneous",
   "version": "0.1.0",
+  "main": "src/index.ts",
   "private": true,
   "dependencies": {
     "@types/glob": "^7.1.3",
