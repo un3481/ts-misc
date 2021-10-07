@@ -2,39 +2,29 @@
   "compilerOptions": {
     "target": "esnext",
     "lib": [
-      "dom",
-      "dom.iterable",
       "esnext"
     ],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": false,
     "forceConsistentCasingInFileNames": true,
-    "noEmit": true,
     "esModuleInterop": true,
     "module": "esnext",
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve",
+    "declaration": true,
+    "outDir":"./dist",
     "baseUrl": "./",
-    "paths": {
-      "@Itypes/*":["./src/types/*"],
-      "@utils/*":["./src/utils/*"],
-      "@styles/*":["./src/styles/*"],
-      "@static/*":["./public/static/*"],
-      "@comp/*":["./src/components/*"],
-      "@pages/*":["./src/pages/*"],
-      "@api/*":["./src/pages/api/*"],
-      "@data/*":["./src/pages/api/data/*"]
-    }
+    "paths": {}
   },
   "include": [
-    "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "dist"
   ]
 }
+

@@ -212,7 +212,7 @@ export type Guards<K extends Types = Types> = As<
 type GuardSetHas = <
   O = unknown,
   K extends KeyOf = KeyOf,
-  T extends Types = 'unknown'
+  T extends Types = Types
 >(
   obj: unknown,
   key: K | K[],

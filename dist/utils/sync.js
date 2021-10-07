@@ -3,37 +3,61 @@
 #                                                       ACESSORIES                                                       #
 ##########################################################################################################################
 */
-
 // Imports
-import * as numbers from './utils/numbers.js'
-import * as handle from './utils/handle.js'
-import * as guards from './utils/guards.js'
-import * as types from './utils/types.js'
-import * as sync from './utils/sync.js'
-import * as sets from './utils/sets.js'
-
+import {
+  pass
+} from './utils.js';
+import {
+  is
+} from './guards.js';
 /*
 ##########################################################################################################################
 #                                                       MISCELLANEOUS                                                    #
 ##########################################################################################################################
 */
-
-// Miscellaneous Class
-export default class Miscellaneous {
-  // Miscellaneous Set
-  numbers = numbers
-  handle = handle
-  guards = guards
-  types = types
-  sync = sync
-  sets = sets
-
-  // Allow Info Inside Misc
-  get misc(): Miscellaneous {
-    return this
-  }
+// Get Date
+export function timestamp() {
+  return new Date().toLocaleString('pt-BR', {
+    timeZone: 'America/Fortaleza'
+  });
 }
-
+// Wait Seconds
+export function wait(mili) {
+  return new Promise(resolve => setTimeout(v => {
+    resolve(v);
+  }, mili));
+}
+// Wait for Promise
+const sync = promise => {
+  // Set Variables
+  let resolution;
+  let done;
+  // Execute Async Function
+  promise
+    .then(val => {
+      resolution = val;
+      done = true;
+    })
+    .catch(err => {
+      done = true;
+      pass(err);
+    });
+  // While not Done: Pass
+  while (is(done, 'null'))
+    pass(null);
+  // Return Value and Error
+  return resolution;
+};
+// Wait Seconds Sync
+export function waitSync(mili) {
+  // Wait Each Option
+  if (is(mili, 'number'))
+    return sync(wait(mili));
+  if (is(mili, 'promise'))
+    return sync(mili);
+  if (is(mili, 'function'))
+    return sync(mili());
+}
 /*
 ##########################################################################################################################
 #                                                         END                                                            #
