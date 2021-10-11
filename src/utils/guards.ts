@@ -164,7 +164,7 @@ export const reGuard: ReGuard = {
     const isf = guards.function
     if (!isf(pExec)) return null
     // Return Recursive Proxy
-    return new Proxy(guards, {
+    return new Proxy(guards as SuperGuards, {
       get(target, name) {
         // Check if name exists
         if (!(name in target)) return null
@@ -178,12 +178,12 @@ export const reGuard: ReGuard = {
         // Return Recursive Type-Guard
         return rExec
       }
-    }) as SuperGuards
+    })
   }
 }
 
 // Recursive Type-Guard Proxy
-export const superGuards = new Proxy(guards, {
+export const superGuards = new Proxy(guards as SuperGuards, {
   get(target, name) {
     // Check if name exists
     if (!(name in target)) return null
@@ -196,7 +196,7 @@ export const superGuards = new Proxy(guards, {
     // Return Proxy
     return exec
   }
-}) as SuperGuards
+})
 
 /*
 ##########################################################################################################################
