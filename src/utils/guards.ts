@@ -164,12 +164,12 @@ export const reGuard: ReGuard = {
     const isf = guards.function
     if (!isf(pExec)) return null
     // Return Recursive Proxy
-    return new Proxy(guards as SuperGuards, {
-      get(target, name) {
-        // Check if name exists
-        if (!(name in target)) return null
+    return new Proxy({} as SuperGuards, {
+      get(_target, p) {
+        // Check if property exists
+        if (!(p in guards)) return null
         // Set Recursive Type-Guard
-        const exec = target[name] as ValueOf<Guards>
+        const exec = guards[p] as ValueOf<Guards>
         function rExec(o) { return pExec(o) || exec(o) }
         // Assign Recursive Proxy
         Object.defineProperties(rExec,
@@ -183,12 +183,12 @@ export const reGuard: ReGuard = {
 }
 
 // Recursive Type-Guard Proxy
-export const superGuards = new Proxy(guards as SuperGuards, {
-  get(target, name) {
-    // Check if name exists
-    if (!(name in target)) return null
+export const superGuards = new Proxy({} as SuperGuards, {
+  get(_target, p) {
+    // Check if property exists
+    if (!(p in guards)) return null
     // Set Recursive Type-Guard
-    const exec = target[name] as ValueOf<Guards>
+    const exec = guards[p] as ValueOf<Guards>
     // Assign Recursive Proxy
     Object.defineProperties(exec,
       Object.getOwnPropertyDescriptors(reGuard)
