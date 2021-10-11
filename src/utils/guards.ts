@@ -16,9 +16,12 @@ import type {
   Callable,
   Constructor,
   Guards,
+  ReGuard,
+  SuperGuards,
   Extra,
   Has,
   KeyOf,
+  ValueOf,
   ArgOf,
   TypeOf,
   Type,
@@ -64,10 +67,10 @@ export function typeOf(obj: unknown): string {
 */
 
 // Check Primary Types
-const makeIs = <N extends Types>(
+function _setGuard<N extends Types>(
   typeName: N,
   constructor: Callable = null
-): TypeGuard<Type<N>, []> => {
+): TypeGuard<Type<N>, []> {
   // Set Guard
   const tg = obj =>
     // eslint-disable-next-line valid-typeof
@@ -77,19 +80,25 @@ const makeIs = <N extends Types>(
   return tg as TypeGuard<Type<N>, []>
 }
 
-// Primary Type-Guard Proxy
+/*
+##########################################################################################################################
+#                                                       MISCELLANEOUS                                                    #
+##########################################################################################################################
+*/
+
+// Primary Type-Guard Object
 export const primaryGuards: Guards<PrimaryTypes> = {
-  undefined: makeIs('undefined'),
-  string: makeIs('string', String),
-  number: makeIs('number', Number),
-  bigint: makeIs('bigint', BigInt),
-  symbol: makeIs('symbol', Symbol),
-  object: makeIs('object', Object),
-  boolean: makeIs('boolean', Boolean),
-  function: makeIs('function', Function)
+  undefined: _setGuard('undefined'),
+  string: _setGuard('string', String),
+  number: _setGuard('number', Number),
+  bigint: _setGuard('bigint', BigInt),
+  symbol: _setGuard('symbol', Symbol),
+  object: _setGuard('object', Object),
+  boolean: _setGuard('boolean', Boolean),
+  function: _setGuard('function', Function)
 }
 
-// Unusual Type-Guard Record
+// Unusual Type-Guard Object
 export const unusualGuards: Guards<UnusualTypes> = {
   never: (obj => false && obj) as TypeGuard<never>,
   any: (obj => true || obj) as TypeGuard<unknown>,
@@ -117,7 +126,7 @@ export const unusualGuards: Guards<UnusualTypes> = {
   }) as TypeGuard<Constructor>
 }
 
-// General Type-Guard Proxy
+// General Type-Guard Object
 const guards: Guards = {
   ...primaryGuards,
   ...unusualGuards
@@ -129,14 +138,17 @@ const guards: Guards = {
 ##########################################################################################################################
 */
 
-// Define General Guard
-const isType = ((obj, typeName) => {
+// Set Functional Type-Guard
+export function isType<T extends Types>(
+  obj: unknown,
+  typeName: T | T[]
+): obj is Type<T> {
   // Set Check Function
   const checkType = t => guards[t](obj)
   // Return Check
   if (!guards.array(typeName)) return checkType(typeName)
   else return typeName.some(checkType)
-}) as IsType
+}
 
 /*
 ##########################################################################################################################
@@ -144,12 +156,60 @@ const isType = ((obj, typeName) => {
 ##########################################################################################################################
 */
 
-// Property Type-Guard
+// Recursive Type-Guard Generator
+export const reGuard: ReGuard = {
+  get or() {
+    // Check THIS Type
+    const pExec = this
+    const isf = guards.function
+    if (!isf(pExec)) return null
+    // Return Recursive Proxy
+    return new Proxy(guards, {
+      get(target, name) {
+        // Check if name exists
+        if (!(name in target)) return null
+        // Set Recursive Type-Guard
+        const exec = target[name] as ValueOf<Guards>
+        function rExec(o) { return pExec(o) || exec(o) }
+        // Assign Recursive Proxy
+        Object.defineProperties(rExec,
+          Object.getOwnPropertyDescriptors(reGuard)
+        )
+        // Return Recursive Type-Guard
+        return rExec
+      }
+    }) as SuperGuards
+  }
+}
+
+// Recursive Type-Guard Proxy
+export const superGuards = new Proxy(guards, {
+  get(target, name) {
+    // Check if name exists
+    if (!(name in target)) return null
+    // Set Recursive Type-Guard
+    const exec = target[name] as ValueOf<Guards>
+    // Assign Recursive Proxy
+    Object.defineProperties(exec,
+      Object.getOwnPropertyDescriptors(reGuard)
+    )
+    // Return Proxy
+    return exec
+  }
+}) as SuperGuards
+
+/*
+##########################################################################################################################
+#                                                       MISCELLANEOUS                                                    #
+##########################################################################################################################
+*/
+
+// Has-Property Type-Guard
 export function has<
-  O = unknown,
   K extends KeyOf = KeyOf,
-  T extends Types = Types
->(obj: unknown, key: K | K[], typeName?: T | T[]): obj is Has<K, Type<T>, O> {
+  T extends Types = Types,
+  O extends Extra = {},
+>(obj: unknown, key: K | K[], typeName?: T | T[], _oref?: O): obj is Has<K, Type<T>, O> {
   // Set Check Function
   const checkType = <K extends KeyOf>(
     o: unknown,
@@ -179,11 +239,12 @@ export function has<
 ##########################################################################################################################
 */
 
-// General Sets Type-Guard
-export function are<K extends KeyOf, T extends Types>(
-  obj: Extra<K>,
-  typeName: T | T[]
-): obj is Extra<K, TypeOf<T>> {
+// Every-Property Type-Guard
+export function are<K extends number, T extends Types, O extends Extra | unknown[] = {}>(
+  obj: Extra | unknown[],
+  typeName: T | T[],
+  _oref?: O
+): obj is O extends unknown[] ? Type<T>[] : Extra<K, Type<T>> {
   // Check All
   return Object.values(obj).every(v => isType(v, typeName))
 }
@@ -194,18 +255,37 @@ export function are<K extends KeyOf, T extends Types>(
 ##########################################################################################################################
 */
 
-// Assign Methods to General Guard
-Object.defineProperties(
-  isType,
-  Object.getOwnPropertyDescriptors({
-    ...guards,
-    in: has,
-    every: are
-  })
-)
-
 // General Type-Guard
-export const is = isType as Is
+export const is = new Proxy({} as Is, {
+  // Is-Type Call 
+  apply(_target, _thisArg, args) {
+    if (args.length != 2) return
+    const [obj, typeName] = args
+    if (!guards.typeof(typeName)) return
+    else if (guards.array(typeName)) {
+      if (!are(typeName, 'typeof', typeName)) return
+    } else return
+    return isType(obj, typeName)
+  },
+  // Property Getters
+  get (_target, p) {
+    if (p === 'in') return has
+    if (p === 'every') return are
+    if (p in guards) return superGuards[p]
+  },
+  // General Methods
+  set (_target, _p, _value) { return null },
+  deleteProperty (_target, _p) { return null },
+  defineProperty (_target, _p, _attr) { return null },
+  ownKeys (_target) { return Object.keys(guards) },
+  // Property Check
+  has(_target, p) {
+    return (
+      p in guards || 
+      (guards.string(p) && ['in', 'has'].includes(p))
+    )
+  }
+})
 
 /*
 ##########################################################################################################################
@@ -213,7 +293,7 @@ export const is = isType as Is
 ##########################################################################################################################
 */
 
-// Function Return Type-Guard
+// Function-Return Type-Guard
 export function isReturn<R extends Types>(
   typeName: R
 ): <A extends ArgOf>(
