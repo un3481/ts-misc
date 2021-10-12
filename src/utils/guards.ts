@@ -178,7 +178,7 @@ function _getHandler(
   return {
     get(_target, p) {
       // Check if property exists
-      if (!(p in guards)) return null
+      if (!(p in guards)) return
       // Set Recursive Type-Guard
       const _exec = guards[p] as ValueOf<Guards>
       function _rxec(o) { return _pxec(o) || _exec(o) }
