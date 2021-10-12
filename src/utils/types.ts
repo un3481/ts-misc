@@ -217,7 +217,8 @@ type GuardSetHas = <
 >(
   obj: unknown,
   key: K | K[],
-  typeName?: T | T[]
+  typeName?: T | T[],
+  _oref?: O
 ) => obj is Has<K, Type<T>, O>
 
 // Set-Every Guard
@@ -226,15 +227,30 @@ type GuardSetEvery = <K extends KeyOf, T extends Types>(
   typeName: T | T[]
 ) => obj is Extra<K, TypeOf<T>>
 
+
+// Recursive-Guards Type
+export interface ReGuard<H extends Types = Types> {
+  or: SuperGuards<Types, H>
+}
+
+// Super-Guard Type
+export type SuperGuard<H extends Types = Types> = As<
+  And<
+    TypeGuard<Type<H>, []> &
+    ReGuard<H>
+  >
+>
+
 // Super-Guards Object Type
-export type SuperGuards<
-  K extends Types | 'in' | 'every' = Types | 'in' | 'every'
-> = As<
-  And<K extends Types ? Guards<K> : { in: GuardSetHas; every: GuardSetEvery }>
+export type SuperGuards<K extends Types = Types, H extends Types = never> = As<
+  And<K extends Types ? Has<K, SuperGuard<H | K>> : never>
 >
 
 // Is Interface
-export interface Is extends SuperGuards, IsType {}
+export interface Is extends IsType, SuperGuards {
+  in: GuardSetHas
+  every: GuardSetEvery
+}
 
 /*
 ##########################################################################################################################
