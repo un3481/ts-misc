@@ -11,8 +11,8 @@ import type {
   Types,
   PrimaryTypes,
   UnusualTypes,
-  TypeGuardShape,
   TypeGuard,
+  TypeGuardLike,
   Callable,
   Constructor,
   Guards,
@@ -42,7 +42,7 @@ export function extend<T, O = unknown>(
 }
 
 // General Set Type-Guard
-export function guard<T>(tg: TypeGuardShape): TypeGuard<T> {
+export function guard<T>(tg: TypeGuardLike): TypeGuard<T> {
   if (extend<TypeGuard<T>>(tg)) return tg
 }
 
@@ -156,51 +156,60 @@ export function isType<T extends Types>(
 ##########################################################################################################################
 */
 
+// Proxy Reference Generator
+function _getGuard(
+  _rgrd: ReGuard,
+  _func: TypeGuardLike
+) { 
+  return new Proxy(_func, {
+    get (_target, p) {
+      const _getter = Object.getOwnPropertyDescriptors(_rgrd).or.get
+      if (p === 'or') return _getter.call(_target)
+      else return _target[p]
+    }
+  })
+}
+
+// Type-Guard Generator
+function _getHandler(
+  _rgrd: ReGuard,
+  _pxec: TypeGuardLike = (o => true)
+) {
+  return {
+    get(_target, p) {
+      // Check if property exists
+      if (!(p in guards)) return null
+      // Set Recursive Type-Guard
+      const _exec = guards[p] as ValueOf<Guards>
+      function _rxec(o) { return _pxec(o) || _exec(o) }
+      // Return Recursive Type-Guard Proxy
+      return _getGuard(_rgrd, _rxec)
+    }
+  }
+}
+
 // Recursive Type-Guard Generator
 export const reGuard: ReGuard = {
   get or() {
     // Check THIS Type
-    const pExec = this
-    const isf = guards.function
-    if (!isf(pExec)) return null
+    const _pxec = this
+    if (!guards.function(_pxec)) return
     // Return Recursive Proxy
-    return new Proxy({} as SuperGuards, {
-      get(_target, p) {
-        // Check if property exists
-        if (!(p in guards)) return null
-        // Set Recursive Type-Guard
-        const exec = guards[p] as ValueOf<Guards>
-        function rExec(o) { return pExec(o) || exec(o) }
-        // Return Recursive Type-Guard Proxy
-        return new Proxy(rExec, {
-          get (target, p) {
-            const _getter = Object.getOwnPropertyDescriptors(reGuard).or.get
-            if (p === 'or') return _getter.call(target)
-            else return target[p]
-          }
-        })
-      }
-    })
+    return new Proxy(
+      {} as SuperGuards,
+      _getHandler(
+        reGuard,
+        _pxec as TypeGuardLike
+      )
+    )
   }
 }
 
 // Recursive Type-Guard Proxy
-export const superGuards = new Proxy({} as SuperGuards, {
-  get(_target, p) {
-    // Check if property exists
-    if (!(p in guards)) return null
-    // Set Recursive Type-Guard
-    const exec = guards[p] as ValueOf<Guards>
-    // Return Recursive Type-Guard Proxy
-    return new Proxy(exec, {
-      get (target, p) {
-        const _getter = Object.getOwnPropertyDescriptors(reGuard).or.get
-        if (p === 'or') return _getter.call(target)
-        else return target[p]
-      }
-    })
-  }
-})
+export const superGuards = new Proxy(
+  {} as SuperGuards,
+  _getHandler(reGuard)
+)
 
 /*
 ##########################################################################################################################

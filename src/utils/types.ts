@@ -184,7 +184,7 @@ export type TypeOf<V extends unknown = unknown> = As<
 */
 
 // Type-Guard Interface
-export type TypeGuardShape<A extends ArgOf = ArgOf> = As<
+export type TypeGuardLike<A extends ArgOf = ArgOf> = As<
   Callable<[obj: unknown, ...args: A], boolean>
 >
 
