@@ -171,12 +171,14 @@ export const reGuard: ReGuard = {
         // Set Recursive Type-Guard
         const exec = guards[p] as ValueOf<Guards>
         function rExec(o) { return pExec(o) || exec(o) }
-        // Assign Recursive Proxy
-        Object.defineProperties(rExec,
-          Object.getOwnPropertyDescriptors(reGuard)
-        )
-        // Return Recursive Type-Guard
-        return rExec
+        // Return Recursive Type-Guard Proxy
+        return new Proxy(rExec, {
+          get (target, p) {
+            const _getter = Object.getOwnPropertyDescriptors(reGuard).or.get
+            if (p === 'or') return _getter.call(target)
+            else return target[p]
+          }
+        })
       }
     })
   }
@@ -189,12 +191,14 @@ export const superGuards = new Proxy({} as SuperGuards, {
     if (!(p in guards)) return null
     // Set Recursive Type-Guard
     const exec = guards[p] as ValueOf<Guards>
-    // Assign Recursive Proxy
-    Object.defineProperties(exec,
-      Object.getOwnPropertyDescriptors(reGuard)
-    )
-    // Return Proxy
-    return exec
+    // Return Recursive Type-Guard Proxy
+    return new Proxy(exec, {
+      get (target, p) {
+        const _getter = Object.getOwnPropertyDescriptors(reGuard).or.get
+        if (p === 'or') return _getter.call(target)
+        else return target[p]
+      }
+    })
   }
 })
 
@@ -257,7 +261,7 @@ export function are<K extends number, T extends Types, O extends Extra | unknown
 
 // General Type-Guard
 export const is = new Proxy({} as Is, {
-  // Is-Type Call 
+  // Is-Type Call
   apply(_target, _thisArg, args) {
     if (args.length != 2) return
     const [obj, typeName] = args
@@ -281,7 +285,7 @@ export const is = new Proxy({} as Is, {
   // Property Check
   has(_target, p) {
     return (
-      p in guards || 
+      p in guards ||
       (guards.string(p) && ['in', 'has'].includes(p))
     )
   }
