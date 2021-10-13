@@ -5,6 +5,7 @@
 */
 // Imports
 import * as numbers from './utils/numbers.js';
+import * as string from './utils/string.js';
 import * as handle from './utils/handle.js';
 import * as guards from './utils/guards.js';
 import * as types from './utils/types.js';
@@ -20,6 +21,7 @@ export default class Miscellaneous {
   constructor() {
     // Miscellaneous Set
     this.numbers = numbers;
+    this.string = string;
     this.handle = handle;
     this.guards = guards;
     this.types = types;
