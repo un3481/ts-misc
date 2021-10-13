@@ -1,4 +1,7 @@
 export declare type As < T > = T;
+export declare class AsIs < T > {
+  constructor(obj: T);
+}
 export declare type Extends < A, B > = A extends B ? true : false;
 export declare type CheckBool < B extends true > = As < B > ;
 export declare type Equal < A, B > = As < As < ( < T > () => T extends A ? 1 : 2) > extends As < ( < T > () => T extends B ? 1 : 2) > ? true : false > ;
@@ -11,11 +14,13 @@ export declare type Join < T extends unknown > = As < [
 export declare type And < T extends unknown > = As < [
   Intersect < T >
 ] extends[infer I] ? I extends never ? never : I extends Extra ? Join < I > : I : never > ;
-export declare type ReadonlyIncluded < T > = T | Readonly < T > ;
-export declare type ToString < T extends string | number | boolean | bigint > = `${T}`;
-export declare type StringConcat < S extends string, C extends string > = `${S}${C}`;
-export declare type StringJoin < T extends unknown[], D extends string > = As < T extends[] ? '' : T extends[string | number | boolean | bigint] ? `${T[0]}` : T extends[string | number | boolean | bigint, ...infer U] ? `${T[0]}${D}${StringJoin<U, D>}` : string > ;
-export declare type StringSplit < S extends string, D extends string > = As < string extends S ? string[] : S extends '' ? [] : S extends `${infer T}${D}${infer U}` ? [T, ...StringSplit < U, D > ] : [S] > ;
+export declare type ReadonlyInclude < T > = T | Readonly < T > ;
+export declare type StringLike = string | number | boolean | bigint;
+export declare type ToString < T extends StringLike > = `${T}`;
+export declare type StringConcat < S extends StringLike, C extends StringLike > = `${S}${C}`;
+export declare type StringJoinHelper < T extends unknown[], D extends StringLike > = AsIs < StringJoin < T, D >> ;
+export declare type StringJoin < T extends ReadonlyInclude < unknown[] > , D extends StringLike > = As < T extends readonly[] ? '' : T extends readonly[StringLike] ? `${T[0]}` : T extends readonly[StringLike, ...infer U] ? `${T[0]}${D}${StringJoin<U, D>}` : string > ;
+export declare type StringSplit < S extends string, D extends StringLike > = As < string extends S ? string[] : S extends '' ? [] : S extends `${infer T}${D}${infer U}` ? [T, ...StringSplit < U, D > ] : [S] > ;
 export declare type LastOf < T > = As < And < T extends unknown ? () => T : never > extends() => infer R ? R : never > ;
 export declare type Push < T extends unknown[], V > = As < [...T, V] > ;
 export declare type TupleOf < T = never, L = LastOf < T > , N = [T] extends[never] ? true : false > = As < true extends N ? [] : Push < TupleOf < Exclude < T, L >> , L >> ;
@@ -81,7 +86,8 @@ export interface ReGuard < H extends Types = Types > {
   or: SuperGuards < Types,
   H > ;
 }
-export declare type SuperGuard < H extends Types = Types > = As < TypeGuard < Type < H > , [] > & ReGuard < H >> ;
+export declare type SuperGuardHelper < H extends Types > = As < TypeGuard < Type < H > , [] > & ReGuard < H >> ;
+export interface SuperGuard < H extends Types = Types > extends SuperGuardHelper < H > {}
 export declare type SuperGuards < K extends Types = Types, H extends Types = never > = As < And < K extends Types ? Has < K, SuperGuard < H | K >> : never >> ;
 export interface Is extends IsType, SuperGuards {
   in: GuardSetHas;

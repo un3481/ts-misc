@@ -7,6 +7,13 @@
 // Export Type No-Op
 export type As<T> = T
 
+// Export Class No-Op
+export class AsIs<T> {
+  constructor(obj: T) {
+    return obj
+  }
+}
+
 /*
 ##########################################################################################################################
 #                                                       MISCELLANEOUS                                                    #
@@ -67,7 +74,7 @@ export type And<T extends unknown> = As<
 >
 
 // Readonly Included Type
-export type ReadonlyIncluded<T> = T | Readonly<T>
+export type ReadonlyInclude<T> = T | Readonly<T>
 
 /*
 ##########################################################################################################################
@@ -84,13 +91,22 @@ export type ToString<T extends StringLike> = `${T}`
 // String-Concat Type
 export type StringConcat<S extends StringLike, C extends StringLike> = `${S}${C}`
 
+// String-Join Helper Type
+export type StringJoinHelper<
+  T extends unknown[],
+  D extends StringLike
+> = AsIs<StringJoin<T, D>>
+
 // String-Join Type
-export type StringJoin<T extends unknown[], D extends StringLike> = As<
-  T extends []
+export type StringJoin<
+  T extends ReadonlyInclude<unknown[]>,
+  D extends StringLike
+> = As<
+  T extends readonly []
     ? ''
-    : T extends [StringLike]
+    : T extends readonly [StringLike]
       ? `${T[0]}`
-      : T extends [StringLike, ...infer U]
+      : T extends readonly [StringLike, ...infer U]
         ? `${T[0]}${D}${StringJoin<U, D>}`
         : string
 >
@@ -334,16 +350,20 @@ P extends Types,
   >
 >
 
-
 // Recursive-Guards Property Type
 export interface ReGuard<H extends Types = Types> {
   or: SuperGuards<Types, H>
 }
 
-// Super-Guard Type
-export type SuperGuard<H extends Types = Types> = As<
+// Helper for High-Depth Prevention
+export type SuperGuardHelper<H extends Types> = As<
   TypeGuard<Type<H>, []> & ReGuard<H>
 >
+
+// Super-Guard Interface
+export interface SuperGuard<
+  H extends Types = Types
+> extends SuperGuardHelper<H> {}
 
 // Super-Guards Object Type
 export type SuperGuards<K extends Types = Types, H extends Types = never> = As<

@@ -4,7 +4,7 @@
 ##########################################################################################################################
 */
 
-import { Extra, KeyOf, ValueOf, ReadonlyIncluded } from './types.js'
+import { Extra, KeyOf, ValueOf, ReadonlyInclude } from './types.js'
 import { is } from './guards.js'
 
 /*
@@ -15,7 +15,7 @@ import { is } from './guards.js'
 
 // Get Random Item of Array
 export function rand<T extends ValueOf>(
-  arr: ReadonlyIncluded<Extra<KeyOf, T> | Array<T>>
+  arr: ReadonlyInclude<Extra<KeyOf, T> | Array<T>>
 ): T {
   const keys = Object.keys(arr)
   const k = keys[Math.floor(Math.random() * keys.length)]

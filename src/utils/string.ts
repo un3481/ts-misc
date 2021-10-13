@@ -6,11 +6,15 @@
 
 // Imports
 import type {
+  As,
+  AsIs,
+  ValueOf,
   ToString,
   StringLike,
   StringConcat,
   StringJoin,
-  StringSplit
+  StringSplit,
+  ReadonlyInclude
 } from './types.js'
 
 /*
@@ -19,11 +23,13 @@ import type {
 ##########################################################################################################################
 */
 
+// String-Join Function
 export function join<
-  T extends unknown[],
+  T extends ReadonlyInclude<unknown[]>,
   D extends StringLike
->(arr: T, delim?: D) {
-  return arr.join(`${delim}`) as StringJoin<T, D>
+>(arr: T, delim?: D): StringJoin<T, D> {
+  const _delimiter = `${delim === null ? ' ' : delim}`
+  return arr.join(_delimiter) as StringJoin<T, D>
 }
 
 /*
