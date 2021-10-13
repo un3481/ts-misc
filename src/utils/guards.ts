@@ -179,14 +179,14 @@ function _getUpstreamGuardHandler<
   return {
     get<P extends string | symbol>(
       _target, p: P
-    ): UpstreamGuard<P, G, true> {
+    ): P extends Types ? UpstreamGuard<P, G, true> : null {
       // Check if property exists
       if (!guards.typeof(p)) return
       // Get Fixed Parameters
       const _guard = guards[p]
       // Set Recursive Type-Guard
-      type UPS = UpstreamGuard<P, G, false>
-      const _upstr = (o => _dnstr(o) || _guard(o)) as UPS
+      type UPS = P extends Types ? UpstreamGuard<P, G, false> : null
+      const _upstr = (o => _dnstr(o) || _guard(o)) as P extends Types ? UPS : null
       // Return Recursive Type-Guard Proxy
       return _setGuardCircularReference(_upstr)
     }

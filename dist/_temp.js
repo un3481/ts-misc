@@ -49,15 +49,19 @@ const e = {
 };
 if (!extend(e))
   throw Error;
+if (!extend(e))
+  throw Error;
 e.e3 = 4;
 // Is with key or array
-if (is.string(a) || is.number(a))
+if (is.string(a))
+  console.log(a);
+if (is.string.or.number(a))
   console.log(a);
 if (is(a, ['string', 'number']))
   console.log(a);
-// Has without type declaration (good)
+// Has without type declaration (half infer)
 if (is.in(e, 'e4', 'string'))
   console.log(e);
-// Has with type declaration (broken infer)
-if (is.in(e, 'e4', 'string'))
+// Has with type declaration (good infer)
+if (is.in(e, 'e4', 'string', e))
   console.log(e);

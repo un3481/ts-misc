@@ -35,7 +35,7 @@ export function typeOf(obj) {
 ##########################################################################################################################
 */
 // Check Primary Types
-const makeIs = (typeName, constructor = null) => {
+function _setGuard(typeName, constructor = null) {
   // Set Guard
   const tg = obj =>
     // eslint-disable-next-line valid-typeof
@@ -43,25 +43,30 @@ const makeIs = (typeName, constructor = null) => {
     (constructor ? obj instanceof constructor : obj === undefined);
   // Return As
   return tg;
-};
-// Primary Type-Guard Proxy
+}
+/*
+##########################################################################################################################
+#                                                       MISCELLANEOUS                                                    #
+##########################################################################################################################
+*/
+// Primary Type-Guard Object
 export const primaryGuards = {
-  undefined: makeIs('undefined'),
-  string: makeIs('string', String),
-  number: makeIs('number', Number),
-  bigint: makeIs('bigint', BigInt),
-  symbol: makeIs('symbol', Symbol),
-  object: makeIs('object', Object),
-  boolean: makeIs('boolean', Boolean),
-  function: makeIs('function', Function)
+  undefined: _setGuard('undefined'),
+  string: _setGuard('string', String),
+  number: _setGuard('number', Number),
+  bigint: _setGuard('bigint', BigInt),
+  symbol: _setGuard('symbol', Symbol),
+  object: _setGuard('object', Object),
+  boolean: _setGuard('boolean', Boolean),
+  function: _setGuard('function', Function)
 };
-// Unusual Type-Guard Record
+// Unusual Type-Guard Object
 export const unusualGuards = {
-  never: (obj => false && obj),
-  any: (obj => true || obj),
+  any: (_obj => true),
+  never: (_obj => false),
+  unknown: (_obj => true),
   true: (obj => obj === true),
   false: (obj => obj === false),
-  unknown: (obj => true || obj),
   date: (obj => obj instanceof Date),
   array: (obj => Array.isArray(obj)),
   regexp: (obj => obj instanceof RegExp),
@@ -69,19 +74,19 @@ export const unusualGuards = {
   promise: (obj => obj instanceof Promise),
   typeof: (obj => primaryGuards.string(obj) &&
     (obj in primaryGuards || obj in unusualGuards)),
-  keyof: (obj => ['string', 'number', 'symbol'].includes(typeOf(obj))),
+  keyof: (obj => ['string', 'number', 'symbol'].includes(typeof obj)),
   class: (obj => {
     if (!primaryGuards.function(obj))
       return false;
     try {
       Reflect.construct(String, [], obj);
-    } catch (e) {
+    } catch (_e) {
       return false;
     }
     return true;
   })
 };
-// General Type-Guard Proxy
+// General Type-Guard Object
 const guards = {
   ...primaryGuards,
   ...unusualGuards
@@ -91,8 +96,8 @@ const guards = {
 #                                                       MISCELLANEOUS                                                    #
 ##########################################################################################################################
 */
-// Define General Guard
-const isType = ((obj, typeName) => {
+// Set Functional Type-Guard
+export function isType(obj, typeName) {
   // Set Check Function
   const checkType = t => guards[t](obj);
   // Return Check
@@ -100,14 +105,51 @@ const isType = ((obj, typeName) => {
     return checkType(typeName);
   else
     return typeName.some(checkType);
-});
+}
 /*
 ##########################################################################################################################
 #                                                       MISCELLANEOUS                                                    #
 ##########################################################################################################################
 */
-// Property Type-Guard
-export function has(obj, key, typeName) {
+// Type-Guard Proxy-Function Generator
+function _setGuardCircularReference(_func) {
+  return new Proxy(_func, {
+    get(target, p) {
+      if (p === 'or') {
+        // Check Target Type
+        if (!guards.function(target))
+          return;
+        // Return Recursive Proxy
+        return new Proxy({}, _getUpstreamGuardHandler(target));
+      } else
+        return target[p];
+    }
+  });
+}
+// Type-Guards Proxy-Handler Generator
+function _getUpstreamGuardHandler(_dnstr) {
+  return {
+    get(_target, p) {
+      // Check if property exists
+      if (!guards.typeof(p))
+        return;
+      // Get Fixed Parameters
+      const _guard = guards[p];
+      const _upstr = (o => _dnstr(o) || _guard(o));
+      // Return Recursive Type-Guard Proxy
+      return _setGuardCircularReference(_upstr);
+    }
+  };
+}
+// Recursive Type-Guard Proxy
+export const superGuards = new Proxy({}, _getUpstreamGuardHandler(guards.never));
+/*
+##########################################################################################################################
+#                                                       MISCELLANEOUS                                                    #
+##########################################################################################################################
+*/
+// Has-Property Type-Guard
+export function has(obj, key, typeName, _oref) {
   // Set Check Function
   const checkType = (o, k) => {
     return typeName ? isType(o[k], typeName) : true;
@@ -136,8 +178,8 @@ export function has(obj, key, typeName) {
 #                                                       MISCELLANEOUS                                                    #
 ##########################################################################################################################
 */
-// General Sets Type-Guard
-export function are(obj, typeName) {
+// Every-Property Type-Guard
+export function are(obj, typeName, _oref) {
   // Check All
   return Object.values(obj).every(v => isType(v, typeName));
 }
@@ -146,20 +188,56 @@ export function are(obj, typeName) {
 #                                                       MISCELLANEOUS                                                    #
 ##########################################################################################################################
 */
-// Assign Methods to General Guard
-Object.defineProperties(isType, Object.getOwnPropertyDescriptors({
-  ...guards,
-  in: has,
-  every: are
-}));
 // General Type-Guard
-export const is = isType;
+export const is = new Proxy({}, {
+  // Is-Type Call
+  apply(_target, _thisArg, args) {
+    if (args.length != 2)
+      return;
+    const [obj, typeName] = args;
+    if (!guards.typeof(typeName))
+      return;
+    else if (guards.array(typeName)) {
+      if (!are(typeName, 'typeof', typeName))
+        return;
+    } else
+      return;
+    return isType(obj, typeName);
+  },
+  // Property Getters
+  get(_target, p) {
+    if (p === 'in')
+      return has;
+    if (p === 'every')
+      return are;
+    if (p in guards)
+      return superGuards[p];
+  },
+  // General Methods
+  set(_target, _p, _value) {
+    return null;
+  },
+  deleteProperty(_target, _p) {
+    return null;
+  },
+  defineProperty(_target, _p, _attr) {
+    return null;
+  },
+  ownKeys(_target) {
+    return Object.keys(guards);
+  },
+  // Property Check
+  has(_target, p) {
+    return (p in guards ||
+      (guards.string(p) && ['in', 'has'].includes(p)));
+  }
+});
 /*
 ##########################################################################################################################
 #                                                       MISCELLANEOUS                                                    #
 ##########################################################################################################################
 */
-// Function Return Type-Guard
+// Function-Return Type-Guard
 export function isReturn(typeName) {
   // Set Type-Guard
   const typeGuard = (obj, ...args) => is(obj(...args), typeName);

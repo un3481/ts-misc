@@ -21,8 +21,8 @@ export type CheckBool<B extends true> = As<B>
 
 // Check if Type A is equal to Type B
 export type Equal<A, B> = As<
-  As<<G>() => G extends A ? 1 : 2> extends 
-    As<<G>() => G extends B ? 1 : 2>
+  As<<T>() => T extends A ? 1 : 2> extends
+    As<<T>() => T extends B ? 1 : 2>
       ? true
       : false
 >
@@ -318,20 +318,19 @@ type GuardSetEvery = <K extends KeyOf, T extends Types>(
 
 // Recursive-Guards Helper Type
 export type UpstreamGuard<
-  P extends string | symbol,
+P extends Types,
   G extends TypeGuard<Type, []>,
   H extends boolean
 > = As<
-  P extends Types
-    ? As<
-        TypeGuard<GuardOf<G> | Type<P>, []>
-      > & As<
-        H extends true
-          ? ReGuard<P>
-          : unknown
-      >
-    : null
+  As<
+    TypeGuard<GuardOf<G> | Type<P>, []>
+  > & As<
+    H extends true
+      ? ReGuard<P>
+      : unknown
+  >
 >
+
 
 // Recursive-Guards Property Type
 export interface ReGuard<H extends Types = Types> {
