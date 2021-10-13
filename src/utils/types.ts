@@ -75,25 +75,28 @@ export type ReadonlyIncluded<T> = T | Readonly<T>
 ##########################################################################################################################
 */
 
+// String-Like Type
+export type StringLike = string | number | boolean | bigint
+
 // To-String Type
-export type ToString<T extends string | number | boolean | bigint> = `${T}`
+export type ToString<T extends StringLike> = `${T}`
 
 // String-Concat Type
-export type StringConcat<S extends string, C extends string> = `${S}${C}`
+export type StringConcat<S extends StringLike, C extends StringLike> = `${S}${C}`
 
 // String-Join Type
-export type StringJoin<T extends unknown[], D extends string> = As<
+export type StringJoin<T extends unknown[], D extends StringLike> = As<
   T extends []
     ? ''
-    : T extends [string | number | boolean | bigint]
+    : T extends [StringLike]
       ? `${T[0]}`
-      : T extends [string | number | boolean | bigint, ...infer U]
+      : T extends [StringLike, ...infer U]
         ? `${T[0]}${D}${StringJoin<U, D>}`
         : string
 >
 
 // String-Split Type
-export type StringSplit<S extends string, D extends string> = As<
+export type StringSplit<S extends string, D extends StringLike> = As<
   string extends S
     ? string[]
     : S extends ''
