@@ -4,11 +4,8 @@
 ##########################################################################################################################
 */
 
-// Check if Type A extends Type B
-export type Extends<A, B> = A extends B ? true : false
-
-// Generates a Type Error For some Expression Evaluating to False
-export type CheckBool<B extends true> = As<B>
+// Export Type No-Op
+export type As<T> = T
 
 /*
 ##########################################################################################################################
@@ -16,8 +13,25 @@ export type CheckBool<B extends true> = As<B>
 ##########################################################################################################################
 */
 
-// Export Type No-Op
-export type As<T> = T
+// Check if Type A extends Type B
+export type Extends<A, B> = A extends B ? true : false
+
+// Generates a Type Error For some Expression Evaluating to False
+export type CheckBool<B extends true> = As<B>
+
+// Check if Type A is equal to Type B
+export type Equal<A, B> = As<
+  As<<G>() => G extends A ? 1 : 2> extends 
+    As<<G>() => G extends B ? 1 : 2>
+      ? true
+      : false
+>
+
+/*
+##########################################################################################################################
+#                                                       MISCELLANEOUS                                                    #
+##########################################################################################################################
+*/
 
 // Intersect Type
 export type Intersect<U extends unknown> = As<
@@ -61,6 +75,40 @@ export type ReadonlyIncluded<T> = T | Readonly<T>
 ##########################################################################################################################
 */
 
+// To-String Type
+export type ToString<T extends string | number | boolean | bigint> = `${T}`
+
+// String-Concat Type
+export type StringConcat<S extends string, C extends string> = `${S}${C}`
+
+// String-Join Type
+export type StringJoin<T extends unknown[], D extends string> = As<
+  T extends []
+    ? ''
+    : T extends [string | number | boolean | bigint]
+      ? `${T[0]}`
+      : T extends [string | number | boolean | bigint, ...infer U]
+        ? `${T[0]}${D}${StringJoin<U, D>}`
+        : string
+>
+
+// String-Split Type
+export type StringSplit<S extends string, D extends string> = As<
+  string extends S
+    ? string[]
+    : S extends ''
+      ? []
+      : S extends `${infer T}${D}${infer U}`
+        ? [T, ...StringSplit<U, D>]
+        : [S]
+>
+
+/*
+##########################################################################################################################
+#                                                       MISCELLANEOUS                                                    #
+##########################################################################################################################
+*/
+
 // Last Item Of Array
 export type LastOf<T> = As<
   And<T extends unknown ? () => T : never> extends () => infer R ? R : never
@@ -82,18 +130,28 @@ export type TupleOf<
 ##########################################################################################################################
 */
 
-// Default Class Symbols
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const prototype = Symbol('Prototype')
-
-// New Instance
-export type New<C extends Constructor> = ReturnOf<C>
-
-export interface Constructor<N extends string | symbol = string | symbol> {
+// Pseudo-Class Interface
+export interface PseudoClass<N extends string | symbol = string | symbol> {
   [Symbol.hasInstance]: Callable<[instance: unknown], boolean>
-  name: N extends string ? N : string
-  (...args: ArgOf): unknown
+  name: N
+  new (...args: ArgOf): unknown
 }
+
+// Literal-Class Interface
+export interface LiteralClass<N extends Types = Types> extends PseudoClass {
+  new (...args: ArgOf): Callable<ArgOf, Type<N>>
+}
+
+// Class Type
+export type Class<N extends string | symbol = string | symbol> = As<
+  N extends string
+    ? Lowercase<N> extends infer LowerN
+      ? LowerN extends Types
+        ? LiteralClass<LowerN>
+        : PseudoClass<N>
+      : never
+    : PseudoClass<N>
+>
 
 /*
 ##########################################################################################################################
@@ -137,7 +195,7 @@ export type UnusualTypesEntries = As<{
   regexp: RegExp
   typeof: Types
   keyof: KeyOf
-  class: Constructor
+  class: Class
   any: unknown
 }>
 
@@ -148,6 +206,12 @@ export type Types = As<PrimaryTypes | UnusualTypes>
 export type PrimaryType<N extends PrimaryTypes = PrimaryTypes> = As<
   ValueOf<{ [P in PrimaryTypes]: N extends P ? PrimaryTypesEntries[P] : never }>
 >
+
+/*
+##########################################################################################################################
+#                                                       MISCELLANEOUS                                                    #
+##########################################################################################################################
+*/
 
 // Type Generator
 export type Type<N extends Types = Types> = As<
@@ -160,21 +224,40 @@ export type Type<N extends Types = Types> = As<
     : never
 >
 
-// Type Name Generator
-export type TypeOf<V extends unknown = unknown> = As<
+// Type-Name Generator Helper
+type TypeOfIterator<V extends unknown, C extends boolean> = As<
   ValueOf<
     {
-      [P in PrimaryTypes | UnusualTypes]: Type<P> extends infer T
-        ? unknown extends T
-          ? never
-          : V extends T
-          ? T extends V
-            ? P
-            : never
+      [P in PrimaryTypes | UnusualTypes]: As<
+        Type<P> extends infer T
+          ? unknown extends T
+            ? undefined
+            : C extends true
+              ? Equal<T, V> extends true
+                ? P
+                : undefined
+              : V extends T
+                ? P
+                : never
           : never
-        : never
+      >
     }
   >
+>
+
+// Type-Name Generator
+export type TypeOf<V extends unknown = unknown> = As<
+  As<
+    TypeOfIterator<V, true> extends infer C
+      ? C extends undefined
+        ? TypeOfIterator<V, false>
+        : C
+      : never
+  > extends infer T
+    ? T extends string
+      ? T
+      : never
+    : never
 >
 
 /*
@@ -227,18 +310,37 @@ type GuardSetEvery = <K extends KeyOf, T extends Types>(
   typeName: T | T[]
 ) => obj is Extra<K, TypeOf<T>>
 
+/*
+##########################################################################################################################
+#                                                       MISCELLANEOUS                                                    #
+##########################################################################################################################
+*/
 
-// Recursive-Guards Type
+// Recursive-Guards Helper Type
+export type UpstreamGuard<
+  P extends string | symbol,
+  G extends TypeGuard<Type, []>,
+  H extends boolean
+> = As<
+  P extends Types
+    ? As<
+        TypeGuard<GuardOf<G> | Type<P>, []>
+      > & As<
+        H extends true
+          ? ReGuard<P>
+          : unknown
+      >
+    : null
+>
+
+// Recursive-Guards Property Type
 export interface ReGuard<H extends Types = Types> {
   or: SuperGuards<Types, H>
 }
 
 // Super-Guard Type
 export type SuperGuard<H extends Types = Types> = As<
-  And<
-    TypeGuard<Type<H>, []> &
-    ReGuard<H>
-  >
+  TypeGuard<Type<H>, []> & ReGuard<H>
 >
 
 // Super-Guards Object Type

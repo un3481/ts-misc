@@ -13,19 +13,19 @@ import type {
   UnusualTypes,
   TypeGuard,
   TypeGuardLike,
-  Callable,
-  Constructor,
   Guards,
-  ReGuard,
+  SuperGuard,
   SuperGuards,
+  UpstreamGuard,
+  Callable,
+  Class,
   Extra,
   Has,
   KeyOf,
-  ValueOf,
   ArgOf,
   TypeOf,
   Type,
-  ReturnOf
+  GuardOf
 } from './types.js'
 
 /*
@@ -100,11 +100,11 @@ export const primaryGuards: Guards<PrimaryTypes> = {
 
 // Unusual Type-Guard Object
 export const unusualGuards: Guards<UnusualTypes> = {
-  never: (obj => false && obj) as TypeGuard<never>,
-  any: (obj => true || obj) as TypeGuard<unknown>,
+  any: (_obj => true) as TypeGuard<unknown>,
+  never: (_obj => false) as TypeGuard<never>,
+  unknown: (_obj => true) as TypeGuard<unknown>,
   true: (obj => obj === true) as TypeGuard<true>,
   false: (obj => obj === false) as TypeGuard<false>,
-  unknown: (obj => true || obj) as TypeGuard<unknown>,
   date: (obj => obj instanceof Date) as TypeGuard<Date>,
   array: (obj => Array.isArray(obj)) as TypeGuard<unknown[]>,
   regexp: (obj => obj instanceof RegExp) as TypeGuard<RegExp>,
@@ -114,16 +114,13 @@ export const unusualGuards: Guards<UnusualTypes> = {
     primaryGuards.string(obj) &&
     (obj in primaryGuards || obj in unusualGuards)) as TypeGuard<Types>,
   keyof: (obj =>
-    ['string', 'number', 'symbol'].includes(typeOf(obj))) as TypeGuard<KeyOf>,
+    ['string', 'number', 'symbol'].includes(typeof obj)) as TypeGuard<KeyOf>,
   class: (obj => {
     if (!primaryGuards.function(obj)) return false
-    try {
-      Reflect.construct(String, [], obj)
-    } catch (e) {
-      return false
-    }
+    try { Reflect.construct(String, [], obj) }
+    catch (_e) { return false }
     return true
-  }) as TypeGuard<Constructor>
+  }) as TypeGuard<Class>
 }
 
 // General Type-Guard Object
@@ -156,11 +153,11 @@ export function isType<T extends Types>(
 ##########################################################################################################################
 */
 
-// Type-Guard Function-Proxy Generator
-function _getGuardWithCircularReference<
-  F extends TypeGuardLike
->(_func: F) {
-  return new Proxy(_func as (F & ReGuard), {
+// Type-Guard Proxy-Function Generator
+function _setGuardCircularReference<
+  G extends TypeGuard<Type, []>
+>(_func: G) {
+  return new Proxy(_func, {
     get (target, p) {
       if (p === 'or') {
         // Check Target Type
@@ -168,29 +165,30 @@ function _getGuardWithCircularReference<
         // Return Recursive Proxy
         return new Proxy(
           {} as SuperGuards,
-          _getUpstreamGuardsHandler(target)
+          _getUpstreamGuardHandler(target)
         )
-      }
-      else return target[p]
+      } else return target[p]
     }
-  })
+  }) as G & SuperGuard<TypeOf<GuardOf<G>>>
 }
 
 // Type-Guards Proxy-Handler Generator
-function _getUpstreamGuardsHandler<
-  F extends TypeGuardLike
->(_dnstr: F): ProxyHandler<SuperGuards> {
+function _getUpstreamGuardHandler<
+  G extends TypeGuard<Type, []>
+>(_dnstr: G): ProxyHandler<SuperGuards> {
   return {
-    get(_target, p) {
+    get<P extends string | symbol>(
+      _target, p: P
+    ): UpstreamGuard<P, G, true> {
       // Check if property exists
-      if (!(p in guards)) return
+      if (!guards.typeof(p)) return
+      // Get Fixed Parameters
+      const _guard = guards[p]
       // Set Recursive Type-Guard
-      const _guard = guards[p] as ValueOf<Guards>
-      function _upstr(o: unknown): As<
-        ReturnOf<F> | ReturnOf<typeof _guard>
-      > { return _dnstr(o) || _guard(o) }
+      type UPS = UpstreamGuard<P, G, false>
+      const _upstr = (o => _dnstr(o) || _guard(o)) as UPS
       // Return Recursive Type-Guard Proxy
-      return _getGuardWithCircularReference(_upstr)
+      return _setGuardCircularReference(_upstr)
     }
   }
 }
@@ -198,7 +196,7 @@ function _getUpstreamGuardsHandler<
 // Recursive Type-Guard Proxy
 export const superGuards = new Proxy(
   {} as SuperGuards,
-  _getUpstreamGuardsHandler(o => false)
+  _getUpstreamGuardHandler(guards.never)
 )
 
 /*
