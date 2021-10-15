@@ -3,12 +3,13 @@
   "author": "anthony",
   "version": "1.3.1",
   "description": "Typescript Miscellaneous Library",
+  "license": "MIT",
   "type": "module",
   "main": "dist/index.js",
   "scripts": {
     "transpile": "tsc -p tsconfig.json",
     "beautify": "js-beautify -r --editorconfig ./dist/**/*.{js,ts,tsx}",
-    "build": "del /Q dist && yarn transpile && yarn beautify"
+    "build": "rmdir \"./dist\" /s /q && yarn transpile && yarn beautify"
   },
   "dependencies": {
     "@types/glob": "^7.1.3",
