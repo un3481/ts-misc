@@ -6,7 +6,6 @@
 
 // Imports
 import { pass } from './utils.js'
-import { Then } from './types.js'
 import { is } from './guards.js'
 
 /*
