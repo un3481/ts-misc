@@ -7,7 +7,7 @@
 // Imports
 import fs from 'fs'
 import { is } from './guards.js'
-import Miscellaneous from '../index.js'
+import { safeSync } from './handle.js'
 import { SuperConstructor } from './types.js'
 
 // Type Imports
@@ -20,15 +20,6 @@ import type {
   PrimitiveType,
   SuperType
 } from './types.js'
-
-/*
-##########################################################################################################################
-#                                                       MISCELLANEOUS                                                    #
-##########################################################################################################################
-*/
-
-// Instance Misc
-const misc = new Miscellaneous()
 
 /*
 ##########################################################################################################################
@@ -91,7 +82,7 @@ export class AccessJSON {
   // Read-JSON Method
   read() {
     // Read-File Function
-    const readFile = misc.handle.safeSync(
+    const readFile = safeSync(
       (_p: string) => fs.readFileSync(_p).toString()
     )
     // Read File
@@ -110,7 +101,7 @@ export class AccessJSON {
   // Read-JSON Method
   write(json: unknown) {
     // Read-File Function
-    const writeFile = misc.handle.safeSync(
+    const writeFile = safeSync(
       (_p: string, _o: string) => fs.writeFileSync(_p, _o)
     )
     // Serialize Object
