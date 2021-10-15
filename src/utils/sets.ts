@@ -74,14 +74,14 @@ export function serialize<T>(obj: T): T {
 */
 
 // Type Parse
-type PrimitiveJSON = As<
+export type PrimitiveJSON = As<
 | PrimitiveType
 | Record<string | number, unknown>
 | unknown[]
 >
 
 // Access JSON Class
-class AccessJSON {
+export class AccessJSON {
   path: string
 
   constructor (path: string) {
