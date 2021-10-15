@@ -7,7 +7,7 @@
 // Imports
 import fs from 'fs'
 import { is } from './guards.js'
-import Miscellaneous from 'src/index.js'
+import Miscellaneous from '../index.js'
 import { SuperConstructor } from './types.js'
 
 // Type Imports
