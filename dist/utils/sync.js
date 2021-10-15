@@ -51,11 +51,11 @@ const sync = promise => {
 // Wait Seconds Sync
 export function waitSync(mili) {
   // Wait Each Option
-  if (is(mili, 'number'))
+  if (is.number(mili))
     return sync(wait(mili));
-  if (is(mili, 'promise'))
+  if (is.promise(mili))
     return sync(mili);
-  if (is(mili, 'function'))
+  if (is.function(mili))
     return sync(mili());
 }
 /*

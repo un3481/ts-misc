@@ -34,6 +34,16 @@ export interface LiteralClass < N extends Types = Types > extends PseudoClass {
   new(...args: ArgOf): Callable < ArgOf, Type < N >> ;
 }
 export declare type Class < N extends string | symbol = string | symbol > = As < N extends string ? Lowercase < N > extends infer LowerN ? LowerN extends Types ? LiteralClass < LowerN > : PseudoClass < N > : never : PseudoClass < N >> ;
+export declare type PrimitiveType = string | number | boolean | null | undefined;
+export declare type SuperType = Object | String | Number | Boolean | Array < unknown > ;
+export declare type SuperConstruct < T > = As < T extends string ? String : T extends number ? Number : T extends boolean ? Boolean : T extends unknown[] ? Array < unknown > : T extends Extra ? Object : T > ;
+export declare function SuperConstructor < T > (value: T): T extends string ? String : T extends number ? Number : T extends boolean ? Boolean : T extends unknown[] ? unknown[] : T extends {
+  [x: string]: unknown;
+  [x: number]: unknown;
+} & {
+  [x: string]: unknown;
+  [x: number]: unknown;
+} ? Object : T;
 declare const primaryPrototype: "string" | "number" | "bigint" | "boolean" | "symbol" | "undefined" | "object" | "function";
 export declare type PrimaryTypes = typeof primaryPrototype;
 export declare type UnusualTypes = keyof UnusualTypesEntries;
@@ -127,9 +137,10 @@ export declare type Has < K extends KeyOf, T extends ValueOf = ValueOf, O = unkn
 export declare type Callable < A extends unknown[] = unknown[], R = unknown > = As < (...args: A) => R > ;
 export declare type ArgOf < F extends Callable = Callable > = As < F extends Callable < infer A > ? A : never > ;
 export declare type ReturnOf < F extends Callable = Callable > = As < ReturnType < F >> ;
-export declare type PromiseThen < T extends Promise < unknown >> = As < T extends PromiseLike < infer R > ? R : never > ;
-export declare type AsyncThen < T extends Callable < ArgOf, Promise < unknown >>> = As < PromiseThen < ReturnOf < T >>> ;
-export declare type Then < T > = As < T extends Promise < unknown > ? PromiseThen < T > : T extends Callable < ArgOf, Promise < unknown >> ? AsyncThen < T > : never > ;
-export declare type PromiseAwait < T > = As < T extends Promise < unknown > ? PromiseAwait < PromiseThen < T >> : T > ;
-export declare type Await < T > = As < T extends Promise < unknown > ? PromiseAwait < T > : T extends Callable < ArgOf, Promise < unknown >> ? PromiseAwait < ReturnOf < T >> : T > ;
+export declare type Async < A extends ArgOf = ArgOf, R = unknown > = As < Callable < A, PromiseLike < R >>> ;
+export declare type PromiseThen < T extends PromiseLike < unknown >> = As < T extends PromiseLike < infer R > ? R : never > ;
+export declare type AsyncThen < T extends Async > = As < PromiseThen < ReturnOf < T >>> ;
+export declare type Then < T > = As < T extends PromiseLike < unknown > ? PromiseThen < T > : T extends Async ? AsyncThen < T > : never > ;
+export declare type PromiseAwait < T > = As < T extends PromiseLike < unknown > ? PromiseAwait < PromiseThen < T >> : T > ;
+export declare type Await < T > = As < T extends PromiseLike < unknown > ? PromiseAwait < T > : T extends Async ? PromiseAwait < ReturnOf < T >> : T > ;
 export {};

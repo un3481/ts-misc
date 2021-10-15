@@ -67,8 +67,8 @@ export function waitSync<
 >(mili: T): R {
   // Wait Each Option
   if (is.number(mili)) return sync(wait(mili))
-  if (is.promise(mili)) return sync(mili)
-  if (is.function(mili)) return sync(mili())
+  if (is.promise(mili)) return sync(mili as Promise<R>)
+  if (is.function(mili)) return sync(mili() as Promise<R>)
 }
 
 /*
