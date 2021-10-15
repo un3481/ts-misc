@@ -11,7 +11,6 @@ import Miscellaneous from 'src/index.js'
 import { SuperConstructor } from './types.js'
 
 // Type Imports
-import type { TSafeReturn } from './handle.js'
 import type {
   As,
   Extra,
