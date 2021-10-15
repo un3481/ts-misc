@@ -129,7 +129,7 @@ export class AccessJSON {
 ##########################################################################################################################
 */
 
-export function jsonProxy(path: string) {
+export function proxyJSON(path: string) {
   // Define AccessJSON Object
   const file = new AccessJSON(path)
   // Return Proxy
