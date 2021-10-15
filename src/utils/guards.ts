@@ -256,8 +256,11 @@ export function are<K extends number, T extends Types, O extends Extra | unknown
 ##########################################################################################################################
 */
 
-// General Type-Guard
-export const is = new Proxy({} as Is, {
+// General Type-Guard Target
+const superTarget = (() => null) as unknown
+
+// General Type-Guard Proxy
+export const is = new Proxy(superTarget as Is, {
   // Is-Type Call
   apply(_target, _thisArg, args) {
     if (args.length != 2) return

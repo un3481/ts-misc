@@ -188,8 +188,10 @@ export function are(obj, typeName, _oref) {
 #                                                       MISCELLANEOUS                                                    #
 ##########################################################################################################################
 */
-// General Type-Guard
-export const is = new Proxy({}, {
+// General Type-Guard Target
+const superTarget = (() => null);
+// General Type-Guard Proxy
+export const is = new Proxy(superTarget, {
   // Is-Type Call
   apply(_target, _thisArg, args) {
     if (args.length != 2)
