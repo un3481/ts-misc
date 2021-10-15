@@ -15,7 +15,7 @@ import { Await, Callable } from './types.js'
 */
 
 // Safe Execution Types
-export type TSafeReturn<T> = [T, Error]
+export type TSafeReturn<T> = readonly [T, Error]
 export type TSafeAsyncReturn<T> = Promise<TSafeReturn<T>>
 export type TSafe<A extends unknown[], R> = Callable<A, TSafeAsyncReturn<R>>
 export type TSafeSync<A extends unknown[], R> = Callable<A, TSafeReturn<R>>
@@ -57,26 +57,24 @@ export function safe<A extends unknown[], T>(
     })
 
     // Return Value and Error
-    return [value, error]
+    return [value, error] as const
   }
 }
 
 // Safe Pattern for Synchrounous Error Handling
 export function safeSync<A extends unknown[], T>(
-  func: (...args: A) => T,
+  func: Callable<A, T>,
   that?: unknown
 ): TSafeSync<A, Await<T>> {
   // Set Async Function
   const safeFunction = safe(func, that)
-
   // Return Decorated Function
   return (...args: A) => {
     // Execute Async Function
     const promise = safeFunction(...args)
     const resolution = waitSync(promise)
-
     // Return Value and Error
-    return resolution
+    return resolution as TSafeReturn<Await<T>>
   }
 }
 

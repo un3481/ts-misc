@@ -32,7 +32,12 @@ export function wait(mili: number): Promise<null> {
 }
 
 // Wait for Promise
-const sync: <T>(promise: Promise<T>) => T = promise => {
+const sync: <
+  P extends Promise<T>,
+  T
+>(
+  promise: P
+) => T = promise => {
   // Set Variables
   let resolution
   let done: boolean
@@ -57,13 +62,13 @@ const sync: <T>(promise: Promise<T>) => T = promise => {
 
 // Wait Seconds Sync
 export function waitSync<
-  T extends number | Promise<unknown> | (() => Promise<R>),
-  R extends T extends number ? null : Then<T>
+  T extends number | Promise<R> | (() => Promise<R>),
+  R extends (T extends number ? null : unknown)
 >(mili: T): R {
   // Wait Each Option
-  if (is(mili, 'number')) return sync(wait(mili as number))
-  if (is(mili, 'promise')) return sync(mili as Promise<R>)
-  if (is(mili, 'function')) return sync(mili() as Promise<R>)
+  if (is.number(mili)) return sync(wait(mili))
+  if (is.promise(mili)) return sync(mili)
+  if (is.function(mili)) return sync(mili())
 }
 
 /*

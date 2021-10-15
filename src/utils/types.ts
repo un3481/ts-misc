@@ -4,6 +4,15 @@
 ##########################################################################################################################
 */
 
+// Imports
+import { is } from './guards.js'
+
+/*
+##########################################################################################################################
+#                                                       MISCELLANEOUS                                                    #
+##########################################################################################################################
+*/
+
 // Export Type No-Op
 export type As<T> = T
 
@@ -171,6 +180,50 @@ export type Class<N extends string | symbol = string | symbol> = As<
       : never
     : PseudoClass<N>
 >
+
+/*
+##########################################################################################################################
+#                                                       MISCELLANEOUS                                                    #
+##########################################################################################################################
+*/
+
+// Primitive Types
+export type PrimitiveType = string | number | boolean | null | undefined
+
+// Super Type
+export type SuperType = Object | String | Number | Boolean | Array<unknown>
+
+// Super-Construct Type
+export type SuperConstruct<T> = As<
+  T extends string
+    ? String
+    : T extends number
+      ? Number
+      : T extends boolean
+        ? Boolean
+        : T extends unknown[]
+          ? Array<unknown>
+          : T extends Extra
+            ? Object
+            : T
+>
+
+// Super-Type Constructor
+export function SuperConstructor<T>(value: T) {
+  return (
+    is.string(value)
+      ? (new String('' + value))
+      : is.number(value)
+        ? (new Number(0 + value))
+        : is.boolean(value)
+          ? (new Boolean(true && value))
+          : is.array(value)
+            ? (new Array([ ...value ]))
+            : is.object(value)
+              ? (new Object({ ...value }))
+              : value
+  ) as SuperConstruct<T>
+}
 
 /*
 ##########################################################################################################################
@@ -475,37 +528,47 @@ export type ReturnOf<F extends Callable = Callable> = As<ReturnType<F>>
 ##########################################################################################################################
 */
 
+// Async Function type
+export type Async<
+  A extends ArgOf = ArgOf,
+  R = unknown
+> = As<
+  Callable<A, PromiseLike<R>>
+>
+
 // Return Type of Promise
-export type PromiseThen<T extends Promise<unknown>> = As<
+export type PromiseThen<T extends PromiseLike<unknown>> = As<
   T extends PromiseLike<infer R> ? R : never
 >
 
 // Return Type of Async
-export type AsyncThen<T extends Callable<ArgOf, Promise<unknown>>> = As<
+export type AsyncThen<T extends Async> = As<
   PromiseThen<ReturnOf<T>>
 >
 
 // Return Type of Promise or Async
 export type Then<T> = As<
-  T extends Promise<unknown>
+  T extends PromiseLike<unknown>
     ? PromiseThen<T>
-    : T extends Callable<ArgOf, Promise<unknown>>
-    ? AsyncThen<T>
-    : never
+    : T extends Async
+      ? AsyncThen<T>
+      : never
 >
 
 // Return Type of Promise
 export type PromiseAwait<T> = As<
-  T extends Promise<unknown> ? PromiseAwait<PromiseThen<T>> : T
+  T extends PromiseLike<unknown>
+    ? PromiseAwait<PromiseThen<T>>
+    : T
 >
 
 // Return Type of Await Promise or Async
 export type Await<T> = As<
-  T extends Promise<unknown>
+  T extends PromiseLike<unknown>
     ? PromiseAwait<T>
-    : T extends Callable<ArgOf, Promise<unknown>>
-    ? PromiseAwait<ReturnOf<T>>
-    : T
+    : T extends Async
+      ? PromiseAwait<ReturnOf<T>>
+      : T
 >
 
 /*
