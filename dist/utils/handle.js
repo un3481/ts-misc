@@ -40,7 +40,7 @@ export function safe(func, that) {
     return [value, error];
   };
 }
-// Safe Pattern for Synchrounous Error Handling
+// Safe Pattern for Synchronous Error Handling
 export function safeSync(func, that) {
   // Set Async Function
   const safeFunction = safe(func, that);

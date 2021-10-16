@@ -28,26 +28,25 @@ export function wait(mili) {
   }, mili));
 }
 // Wait for Promise
-const sync = promise => {
+function sync(promise) {
   // Set Variables
-  let resolution;
-  let done;
+  let resolution = null;
+  let done = false;
   // Execute Async Function
   promise
     .then(val => {
       resolution = val;
       done = true;
     })
-    .catch(err => {
+    .catch(_err => {
       done = true;
-      pass(err);
     });
   // While not Done: Pass
-  while (is(done, 'null'))
+  while (!done)
     pass(null);
-  // Return Value and Error
+  // Return Value
   return resolution;
-};
+}
 // Wait Seconds Sync
 export function waitSync(mili) {
   // Wait Each Option

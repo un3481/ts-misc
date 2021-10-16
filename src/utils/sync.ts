@@ -31,15 +31,15 @@ export function wait(mili: number): Promise<null> {
 }
 
 // Wait for Promise
-const sync: <
+function sync<
   P extends Promise<T>,
   T
 >(
   promise: P
-) => T = promise => {
+): T {
   // Set Variables
-  let resolution
-  let done: boolean
+  let resolution: T = null
+  let done = false
 
   // Execute Async Function
   promise
@@ -47,15 +47,14 @@ const sync: <
       resolution = val
       done = true
     })
-    .catch(err => {
+    .catch(_err => {
       done = true
-      pass(err)
     })
 
   // While not Done: Pass
-  while (is(done, 'null')) pass(null)
+  while (!done) pass(null)
 
-  // Return Value and Error
+  // Return Value
   return resolution
 }
 

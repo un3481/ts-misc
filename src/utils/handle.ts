@@ -61,7 +61,7 @@ export function safe<A extends unknown[], T>(
   }
 }
 
-// Safe Pattern for Synchrounous Error Handling
+// Safe Pattern for Synchronous Error Handling
 export function safeSync<A extends unknown[], T>(
   func: Callable<A, T>,
   that?: unknown
