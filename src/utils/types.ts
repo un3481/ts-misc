@@ -250,7 +250,7 @@ export type PrimaryTypesEntries = As<{
   boolean: boolean
   symbol: symbol
   undefined: undefined
-  object: AnySet
+  object: {}
   function: Callable
 }>
 
@@ -499,7 +499,7 @@ export type Extra<K extends KeyOfPrimary = KeyOfPrimary, T = unknown> = As<
 >
 
 // Type-Of Has
-export type Has<K extends KeyOf, T extends ValueOf = ValueOf, O = unknown> = As<
+export type Has<K extends KeyOf, T extends ValueOf = ValueOf, O extends {} = {}> = As<
   And<{ [P in K]: T } & O>
 >
 
