@@ -21,7 +21,6 @@ import type {
   GuardArrayOf,
   GuardObjectOf,
   Callable,
-  Class,
   Has,
   KeyOf,
   ArgOf,
@@ -115,13 +114,7 @@ export const unusualGuards: Guards<UnusualTypes> = {
     primaryGuards.string(obj) &&
     (obj in primaryGuards || obj in unusualGuards)) as TypeGuard<Types>,
   keyof: (obj =>
-    ['string', 'number', 'symbol'].includes(typeof obj)) as TypeGuard<KeyOf>,
-  class: (obj => {
-    if (!primaryGuards.function(obj)) return false
-    try { Reflect.construct(String, [], obj) }
-    catch (_e) { return false }
-    return true
-  }) as TypeGuard<Class>
+    ['string', 'number', 'symbol'].includes(typeof obj)) as TypeGuard<KeyOf>
 }
 
 // General Type-Guard Object

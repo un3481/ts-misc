@@ -318,6 +318,7 @@ export type Partials<
 #                                                       MISCELLANEOUS                                                    #
 ##########################################################################################################################
 */
+
 type LoopBackSet<T> = {
   [x: string]: T | LoopBack<T>
   [x: number]: T | LoopBack<T>
@@ -325,35 +326,6 @@ type LoopBackSet<T> = {
 }
 type LoopBackArray<T> = (T | LoopBack<T>)[]
 export type LoopBack<T> = LoopBackSet<T> | LoopBackArray<T>
-
-/*
-##########################################################################################################################
-#                                                       MISCELLANEOUS                                                    #
-##########################################################################################################################
-*/
-
-// Pseudo-Class Interface
-export interface PseudoClass<N extends string | symbol = string | symbol> {
-  [Symbol.hasInstance]: Callable<[instance: unknown], boolean>
-  name: N
-  new (...args: ArgOf): unknown
-}
-
-// Literal-Class Interface
-export interface LiteralClass<N extends Types = Types> extends PseudoClass {
-  new (...args: ArgOf): Callable<ArgOf, Type<N>>
-}
-
-// Class Type
-export type Class<N extends string | symbol = string | symbol> = (
-  N extends string
-    ? Lowercase<N> extends infer LowerN
-      ? LowerN extends Types
-        ? LiteralClass<LowerN>
-        : PseudoClass<N>
-      : never
-    : PseudoClass<N>
-)
 
 /*
 ##########################################################################################################################
@@ -441,7 +413,6 @@ export interface UnusualTypesList {
   regexp: RegExp
   typeof: Types
   keyof: KeyOf
-  class: Class
   any: unknown
 }
 
