@@ -1,17 +1,20 @@
 # ts-misc
 Typescript Miscellaneous Library
 
-## usage
-`ts-misc` module exports several utility methods for TypeScript, eg.:
+## Usage
+The `ts-misc` package exports several utility modules for TypeScript.
+
+For example, the `strings` module:
 
 ```typescript
 import { strings } from 'ts-misc'
 
+// Join strings preserving const Type
 const words = ['hello', 'world'] as const
 const result: "hello world" = strings.join(words, ' ')
 ```
 
-### Super Guard
+## Super Guard
 One of the main goals of this library is to make Type-Guards simple (while keeping them compile-time correct). This is accomplished by the use of the `is` export.
 
 The `is` export is a Proxy object that generates Type-Guards programmatically and allows developers to modify and improve existing Type-Guards. The type for this export is `SuperGuard` because it adds new functionalities for the standard Type-Guards.
