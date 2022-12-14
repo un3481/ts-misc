@@ -21,9 +21,7 @@ It can be used as following:
 ```typescript
 import { is } from 'ts-misc'
 
-let example: unknown
-
-example = 2
+let example: unknown = 2
 
 if (is.number(example)) {
   console.log(`it's a number: ${example}`)
@@ -41,18 +39,19 @@ Some more examples:
 ```typescript
 import { is } from 'ts-misc'
 
-let example: unknown
+let example: unknown = "hello world"
 
-example = "hello world"
-
+// This will work
 if (is.string(example)) {
   console.log(`it's a string: ${example}`)
 }
 
+// This will fail
 if (is.number(example)) {
   console.log('this will never be logged')
 }
 
+// This works as well
 if (is.number.or.string(example)) {
   console.log('it's a number or a string: ${example}')
 }
@@ -63,8 +62,10 @@ Using existing Type-Guard along with `SuperGuard`:
 ```typescript
 import { is } from 'ts-misc'
 
+// Example of custom type
 type HelloWorld = { hello: "world" }
 
+// A standard Type-Guard for custom type
 function isHelloWorld(obj: unknown): obj is HelloWorld {
   if (typeof obj != 'object') return false
   if (!('hello' in obj)) reutrn false
@@ -72,18 +73,19 @@ function isHelloWorld(obj: unknown): obj is HelloWorld {
   else return true
 }
 
-let example: unknown
+let example: unknown = { hello: "world" }
 
-example = { hello: "world" }
-
+// Using predefined Type-Guard will work
 if (isHelloWorld(example)) {
   console.log(`it's a HelloWorld: ${example}`)
 }
 
+// This will fail
 if (is.number(example)) {
   console.log('this will never be logged')
 }
 
+// This works as well
 if (is.number.or(isHelloWorld)(example)) {
   console.log('it's a number or a HelloWorld: ${example}')
 }
