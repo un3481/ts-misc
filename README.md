@@ -32,4 +32,4 @@ if (is.number(example)) {
 }
 ```
 
-Although it's main function is generating dynamic Type-Guards, the type definitions for those must be known at compile time, like any other type in TypeScript. This module doesn't aim to create functionalities that TypeScript itself doesn't have, instead it's just intended to make some of the existing ones simpler.
+Although it's main function is generating dynamic Type-Guards, the type definitions for those must be known at compile time, like any other type in TypeScript. This module doesn't aim to create functionalities that TypeScript itself doesn't have, it should just make some of the existing ones simpler.
