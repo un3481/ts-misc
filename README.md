@@ -1,3 +1,5 @@
+[![CI](https://github.com/un3481/ts-misc/actions/workflows/CI.yml/badge.svg)](https://github.com/un3481/ts-misc/actions/workflows/CI.yml)
+
 # ts-misc
 Typescript Miscellaneous Library
 
