@@ -13,27 +13,24 @@
 */
 
 // Imports
-import * as Numbers from './utils/numbers.js'
-import * as Strings from './utils/string.js'
-import * as Handles from './utils/handle.js'
-import * as Guards from './utils/guards.js'
-import * as Types from './utils/types.js'
-import * as Sync from './utils/sync.js'
-import * as Sets from './utils/sets.js'
-import * as Logs from './utils/logging.js'
+import * as Numbers from './modules/numbers.js'
+import * as Strings from './modules/strings.js'
+import * as Handles from './modules/handles.js'
+import * as Guards from './modules/guards.js'
+import * as Types from './modules/types.js'
+import * as Sets from './modules/sets.js'
+import * as Sync from './modules/sync.js'
 
 // ##########################################################################################################################
 
 // Exports
-
 export const numbers = Numbers
 export const strings = Strings
 export const handles = Handles
 export const guards = Guards
 export const types = Types
-export const sync = Sync
 export const sets = Sets
-export const logs = Logs
+export const sync = Sync
 
 // Super-Guard
 export const is = Guards.is
@@ -45,9 +42,8 @@ export default {
   handles: Handles,
   guards: Guards,
   types: Types,
-  sync: Sync,
   sets: Sets,
-  logs: Logs,
+  sync: Sync,
   is: Guards.is
 }
 

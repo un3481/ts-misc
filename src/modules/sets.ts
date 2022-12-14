@@ -7,7 +7,7 @@
 // Imports
 import fs from 'fs'
 import { is } from './guards.js'
-import { safeSync } from './handle.js'
+import { safeSync } from './handles.js'
 import { SuperConstructor } from './types.js'
 
 // Type Imports

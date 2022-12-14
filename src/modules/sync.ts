@@ -14,13 +14,6 @@ import { is } from './guards.js'
 ##########################################################################################################################
 */
 
-// Get Date
-export function timestamp(): string {
-  return new Date().toLocaleString('pt-BR', {
-    timeZone: 'America/Fortaleza'
-  })
-}
-
 // Wait Seconds
 export function wait(mili: number): Promise<null> {
   return new Promise(resolve =>
