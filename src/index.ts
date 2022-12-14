@@ -13,41 +13,42 @@
 */
 
 // Imports
-import * as _logging from './utils/logging.js'
-import * as _numbers from './utils/numbers.js'
-import * as _string from './utils/string.js'
-import * as _handle from './utils/handle.js'
-import * as _guards from './utils/guards.js'
-import * as _types from './utils/types.js'
-import * as _sync from './utils/sync.js'
-import * as _sets from './utils/sets.js'
+import * as Numbers from './utils/numbers.js'
+import * as Strings from './utils/string.js'
+import * as Handles from './utils/handle.js'
+import * as Guards from './utils/guards.js'
+import * as Types from './utils/types.js'
+import * as Sync from './utils/sync.js'
+import * as Sets from './utils/sets.js'
+import * as Logs from './utils/logging.js'
 
 // ##########################################################################################################################
 
 // Exports
-export const logging = _logging
-export const numbers = _numbers
-export const string = _string
-export const handle = _handle
-export const guards = _guards
-export const types = _types
-export const sync = _sync
-export const sets = _sets
+
+export const numbers = Numbers
+export const strings = Strings
+export const handles = Handles
+export const guards = Guards
+export const types = Types
+export const sync = Sync
+export const sets = Sets
+export const logs = Logs
 
 // Super-Guard
-export const is = guards.is
+export const is = Guards.is
 
 // Miscellaneous Class
 export default {
-  logging: logging,
-  numbers: numbers,
-  string: string,
-  handle: handle,
-  guards: guards,
-  types: types,
-  sync: sync,
-  sets: sets,
-  is: is
+  numbers: Numbers,
+  strings: Strings,
+  handles: Handles,
+  guards: Guards,
+  types: Types,
+  sync: Sync,
+  sets: Sets,
+  logs: Logs,
+  is: Guards.is
 }
 
 // ##########################################################################################################################
