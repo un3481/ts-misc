@@ -60,11 +60,11 @@ if (is.number.or.string(example)) {
 }
 ```
 
-Using existing Type-Guards along with `SuperGuard`:
+### Using existing Type-Guards along with `SuperGuard`
+
+Let's assume you've defined the following Type and Type-Guard:
 
 ```typescript
-import { is } from 'ts-misc'
-
 // Example of custom type
 type HelloWorld = { hello: "world" }
 
@@ -75,6 +75,12 @@ function isHelloWorld(obj: unknown): obj is HelloWorld {
   if (obj.hello != 'world') return false
   else return true
 }
+```
+
+You could integrate both into `is` like the following:
+
+```typescript
+import { is } from 'ts-misc'
 
 // Example variable with unknown type
 let example: unknown = { hello: "world" }
