@@ -23,6 +23,7 @@ import { is } from 'ts-misc'
 
 let example: unknown = 2
 
+// Check type of object
 if (is.number(example)) {
   console.log(`it's a number: ${example}`)
 } else {
@@ -39,7 +40,7 @@ Some more examples:
 ```typescript
 import { is } from 'ts-misc'
 
-let example: unknown = "hello world"
+let example: unknown = 'hello world'
 
 // This will work
 if (is.string(example)) {
@@ -53,7 +54,7 @@ if (is.number(example)) {
 
 // This works as well
 if (is.number.or.string(example)) {
-  console.log('it's a number or a string: ${example}')
+  console.log(`it's a number or a string: ${example}`)
 }
 ```
 
@@ -87,6 +88,6 @@ if (is.number(example)) {
 
 // This works as well
 if (is.number.or(isHelloWorld)(example)) {
-  console.log('it's a number or a HelloWorld: ${example}')
+  console.log(`it's a number or a HelloWorld: ${example}`)
 }
 ```
