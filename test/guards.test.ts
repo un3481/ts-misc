@@ -1,7 +1,7 @@
 import { is } from '../src/modules/guards'
 
-describe('testing Super Guard', () => {
-  test('String Guard should work correctly', () => {
+describe('test SuperGuard', () => {
+  test('test SuperGuard "string"', () => {
     expect( is.string(null)            ).toBe( false );
     expect( is.string({})              ).toBe( false );
     expect( is.string([])              ).toBe( false );
