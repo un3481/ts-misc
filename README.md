@@ -60,7 +60,7 @@ if (is.number.or.string(example)) {
 }
 ```
 
-Using existing Type-Guard along with `SuperGuard`:
+Using existing Type-Guards along with `SuperGuard`:
 
 ```typescript
 import { is } from 'ts-misc'
