@@ -13,13 +13,13 @@
 */
 
 // Imports
-import * as Numbers from './modules/numbers.js'
-import * as Strings from './modules/strings.js'
-import * as Handles from './modules/handles.js'
-import * as Guards  from './modules/guards.js'
-import * as Types   from './modules/types.js'
-import * as Sets    from './modules/sets.js'
-import * as Sync    from './modules/sync.js'
+import * as Numbers from './modules/numbers'
+import * as Strings from './modules/strings'
+import * as Handles from './modules/handles'
+import * as Guards  from './modules/guards'
+import * as Types   from './modules/types'
+import * as Sets    from './modules/sets'
+import * as Sync    from './modules/sync'
 
 // ##########################################################################################################################
 

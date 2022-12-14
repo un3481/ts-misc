@@ -6,9 +6,9 @@
 
 // Imports
 import fs from 'fs'
-import { is } from './guards.js'
-import { safeSync } from './handles.js'
-import { SuperConstructor } from './types.js'
+import { is } from './guards'
+import { safeSync } from './handles'
+import { SuperConstructor } from './types'
 
 // Type Imports
 import type {
@@ -19,7 +19,7 @@ import type {
   ReadonlyInclude,
   PrimitiveType,
   SuperType
-} from './types.js'
+} from './types'
 
 /*
 ##########################################################################################################################

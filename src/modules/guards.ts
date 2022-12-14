@@ -26,7 +26,7 @@ import type {
   ArgOf,
   TypeOf,
   Type
-} from './types.js'
+} from './types'
 
 /*
 ##########################################################################################################################
@@ -108,7 +108,7 @@ export const unusualGuards: Guards<UnusualTypes> = {
   date: (obj => obj instanceof Date) as TypeGuard<Date>,
   array: (obj => Array.isArray(obj)) as TypeGuard<unknown[]>,
   regexp: (obj => obj instanceof RegExp) as TypeGuard<RegExp>,
-  null: (obj => obj === null || obj === undefined) as TypeGuard<null>,
+  null: (obj => obj === null) as TypeGuard<null>,
   promise: (obj => obj instanceof Promise) as TypeGuard<Promise<unknown>>,
   typeof: (obj =>
     primaryGuards.string(obj) &&

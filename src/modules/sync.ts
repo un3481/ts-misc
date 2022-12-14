@@ -5,8 +5,8 @@
 */
 
 // Imports
-import { pass } from './utils.js'
-import { is } from './guards.js'
+import { pass } from './utils'
+import { is } from './guards'
 
 /*
 ##########################################################################################################################
