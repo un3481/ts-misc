@@ -8,6 +8,7 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "test": "yarn jest",
     "postinstall": "yarn build"
   },
   "dependencies": {
