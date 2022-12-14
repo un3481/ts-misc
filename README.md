@@ -21,6 +21,7 @@ It can be used as following:
 ```typescript
 import { is } from 'ts-misc'
 
+// Example variable with unknown type
 let example: unknown = 2
 
 // Check type of object
@@ -40,6 +41,7 @@ Some more examples:
 ```typescript
 import { is } from 'ts-misc'
 
+// Example variable with unknown type
 let example: unknown = 'hello world'
 
 // This will work
@@ -66,7 +68,7 @@ import { is } from 'ts-misc'
 // Example of custom type
 type HelloWorld = { hello: "world" }
 
-// A standard Type-Guard for custom type
+// A standard Type-Guard for a custom type
 function isHelloWorld(obj: unknown): obj is HelloWorld {
   if (typeof obj != 'object') return false
   if (!('hello' in obj)) reutrn false
@@ -74,6 +76,7 @@ function isHelloWorld(obj: unknown): obj is HelloWorld {
   else return true
 }
 
+// Example variable with unknown type
 let example: unknown = { hello: "world" }
 
 // Using predefined Type-Guard will work
@@ -91,3 +94,5 @@ if (is.number.or(isHelloWorld)(example)) {
   console.log(`it's a number or a HelloWorld: ${example}`)
 }
 ```
+
+Using the `SuperGuard` Proxy along with existing Type-Guards will greatly reduce developing time and improve the readability of the code.
