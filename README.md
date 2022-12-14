@@ -8,7 +8,7 @@ Typescript Miscellaneous Library
 import { strings } from 'ts-misc'
 
 const words = ['hello', 'world'] as const
-const result: "hello world" = join(words, ' ')
+const result: "hello world" = strings.join(words, ' ')
 ```
 
 ### Super Guard
