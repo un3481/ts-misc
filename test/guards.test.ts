@@ -19,8 +19,8 @@ describe('test SuperGuard', () => {
     expect( is.number(null)            ).toBe( false );
     expect( is.number({})              ).toBe( false );
     expect( is.number([])              ).toBe( false );
-    expect( is.number(1)               ).toBe( false );
-    expect( is.number('1')             ).toBe( true  );
+    expect( is.number('1')             ).toBe( false );
+    expect( is.number(1)               ).toBe( true  );
     expect( is.number(0)               ).toBe( true  );
     expect( is.number(Number(1))       ).toBe( true  );
     expect( is.number(Number('1'))     ).toBe( true  );
