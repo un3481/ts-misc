@@ -95,4 +95,6 @@ if (is.number.or(isHelloWorld)(example)) {
 }
 ```
 
-Using the `SuperGuard` Proxy along with existing Type-Guards will greatly reduce developing time and improve the readability of the code.
+Using the `SuperGuard` object to extend existing Type-Guards will greatly reduce developing time and improve the readability of the code.
+
+No more need to do several lines of code for checking elements in an `Axios` response object, just add your existing Type-Guards to the `is` pipeline and your type is ensured at compile time.
