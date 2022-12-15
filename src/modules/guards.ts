@@ -1,10 +1,6 @@
-/*
-##########################################################################################################################
-#                                                       MISCELLANEOUS                                                    #
-##########################################################################################################################
-*/
+// ##########################################################################################################################
 
-import type {
+import {
   As,
   Is,
   And,
@@ -25,14 +21,17 @@ import type {
   KeyOf,
   ArgOf,
   TypeOf,
-  Type
+  Type,
+  Set,
+  GuardDescriptor,
+  ReadonlyInclude,
+  TypeFromGuardDescriptor,
+  TypeFromGuardOrDescriptor,
+  GuardOrDescriptor,
+  opt
 } from './types'
 
-/*
-##########################################################################################################################
-#                                                       MISCELLANEOUS                                                    #
-##########################################################################################################################
-*/
+// ##########################################################################################################################
 
 // General Make Type-Guard
 export function extend<T, O = unknown>(
@@ -46,11 +45,7 @@ export function guard<T>(tg: TypeGuardLike): TypeGuard<T> {
   if (extend<TypeGuard<T>>(tg)) return tg
 }
 
-/*
-##########################################################################################################################
-#                                                       MISCELLANEOUS                                                    #
-##########################################################################################################################
-*/
+// ##########################################################################################################################
 
 // Get Type-Of Object using 'ToString' Method
 export function typeOf(obj: unknown): string {
@@ -60,11 +55,7 @@ export function typeOf(obj: unknown): string {
     .toLowerCase()
 }
 
-/*
-##########################################################################################################################
-#                                                       MISCELLANEOUS                                                    #
-##########################################################################################################################
-*/
+// ##########################################################################################################################
 
 // Check Primary Types
 function setGuard<N extends Types>(
@@ -80,11 +71,7 @@ function setGuard<N extends Types>(
   return tg as TypeGuard<Type<N>, []>
 }
 
-/*
-##########################################################################################################################
-#                                                       MISCELLANEOUS                                                    #
-##########################################################################################################################
-*/
+// ##########################################################################################################################
 
 // Primary Type-Guard Object
 export const primaryGuards: Guards<PrimaryTypes> = {
@@ -120,11 +107,7 @@ const guards: Guards = {
   ...extendedGuards
 }
 
-/*
-##########################################################################################################################
-#                                                       MISCELLANEOUS                                                    #
-##########################################################################################################################
-*/
+// ##########################################################################################################################
 
 // Set Functional Type-Guard
 export function isType<T extends Types>(
@@ -138,31 +121,79 @@ export function isType<T extends Types>(
   else return typeName.some(checkType)
 }
 
-/*
-##########################################################################################################################
-#                                                       MISCELLANEOUS                                                    #
-##########################################################################################################################
-*/
+// ##########################################################################################################################
 
 // General Type-Guard Target
-const superTarget = (() => null) as unknown
+const superTarget = (o => false) as unknown
 
-/*
-##########################################################################################################################
-#                                                       MISCELLANEOUS                                                    #
-##########################################################################################################################
-*/
+// ##########################################################################################################################
+
+type TGGD<T extends GuardOrDescriptor> = (
+  TypeGuard<TypeFromGuardOrDescriptor<T>, []>
+)
+
+// ##########################################################################################################################
+
+// Check if Input is valid GuardDescriptor
+const isGuardDescriptor = <
+  T extends ReadonlyInclude<unknown[] | Set> = null
+>(obj: unknown): obj is GuardDescriptor<T> => {
+  if (guards.array(obj)) {
+    if (obj.every(
+      o => guards.function(o) || isGuardDescriptor(o)
+    )) return true
+  }
+  else if (guards.object(obj)) {
+    if (Object.values(obj).every(
+      o => guards.function(o) || isGuardDescriptor(o)
+    )) return true
+  }
+  return false
+}
+
+// ##########################################################################################################################
+
+const guardFromDescriptor = <
+  D extends GuardDescriptor
+>(descriptor: D): TypeGuard<TypeFromGuardDescriptor<D>, []> => {
+  if (guards.array(descriptor)) {
+    return (obj: unknown): obj is TypeFromGuardDescriptor<D> => {
+      if (!guards.array(obj)) return false
+      return (
+        descriptor.every(
+          (guard, index) => {
+            const _guard = guards.function(guard) ? guard : guardFromDescriptor(guard)
+            return _guard(obj[index])
+          }
+        )
+      )
+    }
+  }
+  else if (guards.object(descriptor)) {
+    return (obj: unknown): obj is TypeFromGuardDescriptor<D> => {
+      if (!guards.object(obj)) return false
+      return (
+        Object.entries(descriptor).every(
+          ([key, guard]) => {
+            const _guard = guards.function(guard) ? guard : guardFromDescriptor(guard)
+            return _guard(obj[key])
+          }
+        )
+      )
+    }
+  }
+  throw new Error('invalid Guard-Descriptor')
+}
+
+// ##########################################################################################################################
 
 // Helper Types
 type IterFlag = 'array' | 'object'
 type IterSel<I extends IterFlag, AO, A, O, E> = (
   I extends IterFlag
-    ? AO
-    : I extends 'array'
-      ? A
-      : I extends 'object'
-        ? O
-        : E
+    ? AO : I extends 'array'
+      ? A : I extends 'object'
+        ? O : E
 )
 
 // Check Set Guard Flag
@@ -175,16 +206,14 @@ const upstreamGuardGenerator = <D, G, I extends IterFlag = null>(
   iter?: I
 ): IterSel<
   I,
-  GuardArrayOf<G, D> |
-  GuardObjectOf<G, D>,
+  GuardArrayOf<G, D> | GuardObjectOf<G, D>,
   GuardArrayOf<G, D>,
   GuardObjectOf<G, D>,
   TypeGuard<D | G, []>
 > => {
   type IG = IterSel<
     I,
-    GuardArrayOf<G, D> |
-    GuardObjectOf<G, D>,
+    GuardArrayOf<G, D> | GuardObjectOf<G, D>,
     GuardArrayOf<G, D>,
     GuardObjectOf<G, D>,
     never
@@ -198,8 +227,7 @@ const upstreamGuardGenerator = <D, G, I extends IterFlag = null>(
       : (o => prstr(o) || guard(o)) as TypeGuard<D | G, []>
   ) as IterSel<
     I,
-    GuardArrayOf<G, D> |
-    GuardObjectOf<G, D>,
+    GuardArrayOf<G, D> | GuardObjectOf<G, D>,
     GuardArrayOf<G, D>,
     GuardObjectOf<G, D>,
     TypeGuard<D | G, []>
@@ -208,11 +236,7 @@ const upstreamGuardGenerator = <D, G, I extends IterFlag = null>(
   return upstr
 }
 
-/*
-##########################################################################################################################
-#                                                       MISCELLANEOUS                                                    #
-##########################################################################################################################
-*/
+// ##########################################################################################################################
 
 // Type-Guard Proxy-Function Generator
 const superGuardGenerator = <
@@ -224,7 +248,7 @@ const superGuardGenerator = <
 >(guard: G, dnstr: D, iter?: I) => {
   // Return Proxy
   return new Proxy(guard, {
-    apply (
+    apply(
       target,
       _thisArg,
       args: [unknown]
@@ -233,7 +257,7 @@ const superGuardGenerator = <
       const [obj] = args
       return target(obj)
     },
-    get (target, p) {
+    get(target, p) {
       // Check Target Type
       if (!guards.function(target)) return null
       // In Clause
@@ -248,11 +272,16 @@ const superGuardGenerator = <
       )
       // Of Clause
       if (p === 'of' && checkSetFlag(iter)) {
-        // Return Proxy
         return new Proxy(
           superTarget as SuperGuards<TD>[I]['of'],
           guardProxyHandler(dnstr, iter)
         )
+      }
+      // Optional Clause
+      if (p === 'opt') {
+        // Generate Recursive Type-Guard Proxy
+        const upstr = upstreamGuardGenerator(target, guards.undefined, iter)
+        return superGuardGenerator(upstr, target, null)
       }
       // Else
       return target[p]
@@ -260,11 +289,7 @@ const superGuardGenerator = <
   }) as unknown as SuperGuard<G>
 }
 
-/*
-##########################################################################################################################
-#                                                       MISCELLANEOUS                                                    #
-##########################################################################################################################
-*/
+// ##########################################################################################################################
 
 // Proxy-Handler Helper Type
 type UPS<P, H> = P extends Types ? SuperGuard<H | Type<P>> : never
@@ -272,7 +297,7 @@ type UPS<P, H> = P extends Types ? SuperGuard<H | Type<P>> : never
 // Type-Guards Proxy-Handler Generator
 const guardProxyHandler = <H, I extends IterFlag>(
   dnstr: TypeGuard<H, []> | null,
-  iter?: I
+  iter: I
 ): ProxyHandler<
   IterSel<
     I,
@@ -284,16 +309,20 @@ const guardProxyHandler = <H, I extends IterFlag>(
   >
 > => ({
   // Or Call
-  apply<U>(
+  apply<T extends GuardOrDescriptor>(
     _target,
     _thisArg,
-    args: [TypeGuard<U, []>]
+    args: [T]
   ) {
     if (args.length != 1) throw new Error('invalid arguments')
     const [guard] = args
-    if (!guards.function(guard)) throw new Error('invalid arguments')
+    // Tranform GuardDescriptor
+    let _guard: TGGD<T>
+    if (guards.function(guard)) { _guard = guard as TGGD<T> }
+    else if (isGuardDescriptor(guard)) { _guard = guardFromDescriptor(guard) as TGGD<T> }
+    else throw new Error('invalid Guard-Descriptor')
     // Generate Recursive Type-Guard Proxy
-    const upstr = upstreamGuardGenerator(dnstr, guard, iter)
+    const upstr = upstreamGuardGenerator(dnstr, _guard, iter)
     return superGuardGenerator(upstr, dnstr, null)
   },
   // Or Get
@@ -311,18 +340,14 @@ const guardProxyHandler = <H, I extends IterFlag>(
     return superGuardGenerator(upstr, dnstr, flag) as UPS<P, H>
   },
   // General Methods
-  set (_target, _p, _value) { return null },
-  deleteProperty (_target, _p) { return null },
-  defineProperty (_target, _p, _attr) { return null },
-  ownKeys (_target) { return Object.keys(guards) },
+  set(_target, _p, _value) { return null },
+  deleteProperty(_target, _p) { return null },
+  defineProperty(_target, _p, _attr) { return null },
+  ownKeys(_target) { return Object.keys(guards) },
   has(_target, p) { return p in guards }
 })
 
-/*
-##########################################################################################################################
-#                                                       MISCELLANEOUS                                                    #
-##########################################################################################################################
-*/
+// ##########################################################################################################################
 
 // Type-Guards Proxy-Handler Generator
 const guardHasProxyHandler = <H>(
@@ -342,25 +367,23 @@ const guardHasProxyHandler = <H>(
   },
 })
 
-/*
-##########################################################################################################################
-#                                                       MISCELLANEOUS                                                    #
-##########################################################################################################################
-*/
+// ##########################################################################################################################
 
 // Recursive Type-Guard Proxy
 export const superGuards = new Proxy(
   superTarget as SuperGuards,
-  guardProxyHandler(null)
+  guardProxyHandler(null, null)
 )
 
 // General Type-Guard Proxy
-export const is = new Proxy(superGuards as Is, {
+export const is: Is = new Proxy(
+  superGuards as SuperGuards & {in: GuardHas<unknown>},
+  {
   // Get Properties
-  get (target, p) {
+  get(target, p) {
     // Check Target Type
     if (!guards.function(target)) throw new Error(
-      'invalid target at SuperGuard proxy'
+      'invalid target at Is proxy'
     )
     // In Clause
     if (p === 'in') return new Proxy(
@@ -371,16 +394,14 @@ export const is = new Proxy(superGuards as Is, {
     return target[p]
   },
   // Property Check
-  has(_target, p) { return (p in guards ||
-    (guards.string(p) && ['in'].includes(p))
-  )}
+  has(_target, p) {
+    return (p in guards ||
+      (guards.string(p) && ['in'].includes(p))
+    )
+  }
 })
 
-/*
-##########################################################################################################################
-#                                                       MISCELLANEOUS                                                    #
-##########################################################################################################################
-*/
+// ##########################################################################################################################
 
 // Has-Property Type-Guard
 export function has<
@@ -413,11 +434,7 @@ export function has<
   else return key.every(k => checkKey(obj, k))
 }
 
-/*
-##########################################################################################################################
-#                                                       MISCELLANEOUS                                                    #
-##########################################################################################################################
-*/
+// ##########################################################################################################################
 
 // Function-Return Type-Guard
 export function isReturn<R extends Types>(
@@ -436,8 +453,4 @@ export function isReturn<R extends Types>(
   return typeGuard
 }
 
-/*
-##########################################################################################################################
-#                                                       MISCELLANEOUS                                                    #
-##########################################################################################################################
-*/
+// ##########################################################################################################################
