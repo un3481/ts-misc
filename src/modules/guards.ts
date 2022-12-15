@@ -1,55 +1,57 @@
 // ##########################################################################################################################
 
 import {
-  As,
   Is,
   And,
+  Set,
+  Type,
   Types,
+  KeyOf,
+  Callable,
   PrimaryTypes,
   ExtendedTypes,
   TypeGuard,
   TypeGuardLike,
   Guards,
-  TypeFromGuard,
   SuperGuard,
   SuperGuards,
+  Has,
   GuardHas,
   GuardArrayOf,
   GuardObjectOf,
-  Callable,
-  Has,
-  KeyOf,
-  ArgOf,
-  TypeOf,
-  Type,
-  Set,
   GuardDescriptor,
   ReadonlyInclude,
   TypeFromGuardDescriptor,
   TypeFromGuardOrDescriptor,
-  GuardOrDescriptor,
-  opt
+  GuardOrDescriptor
 } from './types'
 
 // ##########################################################################################################################
 
 // General Make Type-Guard
-export function extend<T, O = unknown>(
+export const extend = <T, O = unknown>(
   obj: unknown
-): obj is (T extends {} ? (O extends {} ? And<O & T> : O & T) : O & T) {
+): obj is (
+  T extends {}
+    ? (O extends {} ? And<O & T> : O & T)
+    : O & T
+) => {
   return true
 }
 
 // General Set Type-Guard
-export function guard<T>(tg: TypeGuardLike): TypeGuard<T> {
+export const guard = <T>(
+  tg: TypeGuardLike
+): TypeGuard<T> => {
   if (extend<TypeGuard<T>>(tg)) return tg
 }
 
 // ##########################################################################################################################
 
 // Get Type-Of Object using 'ToString' Method
-export function typeOf(obj: unknown): string {
-  return Object.toString
+export const typeOf = (obj: unknown): string => {
+  return Object
+    .toString
     .call(obj)
     .match(/\s([a-zA-Z]+)/)[1]
     .toLowerCase()
@@ -58,47 +60,44 @@ export function typeOf(obj: unknown): string {
 // ##########################################################################################################################
 
 // Check Primary Types
-function setGuard<N extends Types>(
+const setGuard = <N extends Types>(
   typeName: N,
-  constructor: Callable = null
-): TypeGuard<Type<N>, []> {
-  // Set Guard
-  const tg = obj =>
+  constructor: Callable | undefined
+): TypeGuard<Type<N>, []> => {
+  return (o: unknown): o is Type<N> => {
     // eslint-disable-next-line valid-typeof
-    typeof obj === typeName ||
-    (constructor ? obj instanceof constructor : obj === undefined)
-  // Return As
-  return tg as TypeGuard<Type<N>, []>
+    return (typeof o === typeName) || (constructor ? o instanceof constructor : o === undefined)
+  }
 }
 
 // ##########################################################################################################################
 
 // Primary Type-Guard Object
-export const primaryGuards: Guards<PrimaryTypes> = {
-  undefined: setGuard('undefined'),
-  string: setGuard('string', String),
-  number: setGuard('number', Number),
-  bigint: setGuard('bigint', BigInt),
-  symbol: setGuard('symbol', Symbol),
-  object: (o => (o || false) && setGuard('object', Object)(o)) as TypeGuard<{}>,
-  boolean: setGuard('boolean', Boolean),
-  function: setGuard('function', Function)
+const primaryGuards: Guards<PrimaryTypes> = {
+  undefined: setGuard( 'undefined', undefined ),
+  string:    setGuard( 'string',    String    ),
+  number:    setGuard( 'number',    Number    ),
+  bigint:    setGuard( 'bigint',    BigInt    ),
+  symbol:    setGuard( 'symbol',    Symbol    ),
+  boolean:   setGuard( 'boolean',   Boolean   ),
+  function:  setGuard( 'function',  Function  ),
+  object:    (obj => (obj || false) && setGuard('object', Object)(obj)) as TypeGuard<{}>
 }
 
 // Extended Type-Guard Object
-export const extendedGuards: Guards<ExtendedTypes> = {
-  any: (_obj => true) as TypeGuard<unknown>,
-  never: (_obj => false) as TypeGuard<never>,
-  unknown: (_obj => true) as TypeGuard<unknown>,
-  null: (obj => obj === null) as TypeGuard<null>,
-  true: (obj => obj === true) as TypeGuard<true>,
-  false: (obj => obj === false) as TypeGuard<false>,
-  date: (obj => obj instanceof Date) as TypeGuard<Date>,
-  array: (obj => Array.isArray(obj)) as TypeGuard<unknown[]>,
-  regexp: (obj => obj instanceof RegExp) as TypeGuard<RegExp>,
+const extendedGuards: Guards<ExtendedTypes> = {
+  any:     (obj => true) as TypeGuard<unknown>,
+  never:   (obj => false) as TypeGuard<never>,
+  unknown: (obj => true) as TypeGuard<unknown>,
+  null:    (obj => obj === null) as TypeGuard<null>,
+  true:    (obj => obj === true) as TypeGuard<true>,
+  false:   (obj => obj === false) as TypeGuard<false>,
+  date:    (obj => obj instanceof Date) as TypeGuard<Date>,
+  array:   (obj => Array.isArray(obj)) as TypeGuard<unknown[]>,
+  regexp:  (obj => obj instanceof RegExp) as TypeGuard<RegExp>,
   promise: (obj => obj instanceof Promise) as TypeGuard<Promise<unknown>>,
-  typeof: (obj => (p => p.string(obj) && (obj in p || obj in extendedGuards))(primaryGuards)) as TypeGuard<Types>,
-  keyof: (obj => (p => p.string(obj) || p.number(obj) || p.symbol(obj))(primaryGuards)) as TypeGuard<KeyOf>
+  keyof:   (obj => (p => p.string(obj) || p.number(obj) || p.symbol(obj))(primaryGuards)) as TypeGuard<KeyOf>,
+  typeof:  (obj => (p => p.string(obj) && (obj in p || obj in extendedGuards))(primaryGuards)) as TypeGuard<Types>
 }
 
 // General Type-Guard Object
@@ -109,16 +108,34 @@ const guards: Guards = {
 
 // ##########################################################################################################################
 
-// Set Functional Type-Guard
-export function isType<T extends Types>(
+// Has-Property Type-Guard
+export const has = <
+  K extends KeyOf, T = unknown
+>(
   obj: unknown,
-  typeName: T | T[]
-): obj is Type<T> {
+  key: K | K[],
+  guard: TypeGuard<T, []> | null
+): obj is Has<K, T> => {
+  // Check Object
+  if (!guards.object(obj)) return false
   // Set Check Function
-  const checkType = t => guards[t](obj)
+  const checkType = <P extends KeyOf>(
+    o: unknown, k: P
+  ): o is Has<P, T> => {
+    return guard ? guard(o[k]) : true
+  }
+  // Perform Key Check
+  const checkKey = (o: {}, k: KeyOf): o is Has<K, T> => {
+    if (o[k] === undefined) return false
+    if (k in o) return checkType(o, k)
+    if (Object.prototype.hasOwnProperty.call(o, k)) return checkType(o, k)
+    if (guards.string(k) && Object.keys(o).includes(k)) {
+      return checkType(o, k)
+    } else return false
+  }
   // Return Check
-  if (!guards.array(typeName)) return checkType(typeName)
-  else return typeName.some(checkType)
+  if (!guards.array(key)) return checkKey(obj, key)
+  else return key.every(k => checkKey(obj, k))
 }
 
 // ##########################################################################################################################
@@ -153,11 +170,14 @@ const isGuardDescriptor = <
 
 // ##########################################################################################################################
 
-const guardFromDescriptor = <
+const guardFromArrayDescriptor = <
   D extends GuardDescriptor
->(descriptor: D): TypeGuard<TypeFromGuardDescriptor<D>, []> => {
-  if (guards.array(descriptor)) {
-    return (obj: unknown): obj is TypeFromGuardDescriptor<D> => {
+>(descriptor: D): (
+  TypeGuard<TypeFromGuardDescriptor<D>, []>
+) => {
+  if (!guards.array(descriptor)) throw new Error('invalid Guard-Descriptor')
+  return (
+    (obj: unknown): obj is TypeFromGuardDescriptor<D> => {
       if (!guards.array(obj)) return false
       return (
         descriptor.every(
@@ -168,70 +188,75 @@ const guardFromDescriptor = <
         )
       )
     }
-  }
-  else if (guards.object(descriptor)) {
-    return (obj: unknown): obj is TypeFromGuardDescriptor<D> => {
-      if (!guards.object(obj)) return false
-      return (
-        Object.entries(descriptor).every(
-          ([key, guard]) => {
-            const _guard = guards.function(guard) ? guard : guardFromDescriptor(guard)
-            return _guard(obj[key])
-          }
-        )
+  )
+}
+
+const guardFromObjectDescriptor = <
+  D extends GuardDescriptor
+>(descriptor: D): (
+  TypeGuard<TypeFromGuardDescriptor<D>, []>
+) => (
+  (obj: unknown): obj is TypeFromGuardDescriptor<D> => {
+    if (!guards.object(obj)) return false
+    return (
+      Object.entries(descriptor).every(
+        ([key, guard]) => {
+          const _guard = guards.function(guard) ? guard : guardFromDescriptor(guard)
+          return _guard(obj[key])
+        }
       )
-    }
+    )
   }
-  throw new Error('invalid Guard-Descriptor')
+)
+
+const guardFromDescriptor = <
+  D extends GuardDescriptor
+>(descriptor: D): TypeGuard<TypeFromGuardDescriptor<D>, []> => {
+       if (guards.array(  descriptor )) return guardFromArrayDescriptor<D>(descriptor)
+  else if (guards.object( descriptor )) return   guardFromObjectDescriptor(descriptor)
+  else throw new Error('invalid Guard-Descriptor')
 }
 
 // ##########################################################################################################################
 
 // Helper Types
 type IterFlag = 'array' | 'object'
-type IterSel<I extends IterFlag, AO, A, O, E> = (
+type SelIter<I extends IterFlag, AO, A, O, E> = (
   I extends IterFlag
     ? AO : I extends 'array'
       ? A : I extends 'object'
         ? O : E
 )
 
-// Check Set Guard Flag
-const checkSetFlag = (flag: string): flag is IterFlag => ['array', 'object'].includes(flag)
-
-// Type-Guard Proxy-Function Generator
-const upstreamGuardGenerator = <D, G, I extends IterFlag = null>(
-  dnstr: TypeGuard<D, []> | null,
-  guard: TypeGuard<G, []>,
-  iter?: I
-): IterSel<
+type SelGuard<I extends IterFlag, D, G, F> = SelIter<
   I,
   GuardArrayOf<G, D> | GuardObjectOf<G, D>,
   GuardArrayOf<G, D>,
   GuardObjectOf<G, D>,
-  TypeGuard<D | G, []>
-> => {
-  type IG = IterSel<
-    I,
-    GuardArrayOf<G, D> | GuardObjectOf<G, D>,
-    GuardArrayOf<G, D>,
-    GuardObjectOf<G, D>,
-    never
-  >
+  F
+>
+
+// ##########################################################################################################################
+
+// Check Set Guard Flag
+const checkSetFlag = (flag: string): flag is IterFlag => ['array', 'object'].includes(flag)
+
+// ##########################################################################################################################
+
+// Type-Guard Proxy-Function Generator
+const upstreamGuardGenerator = <I extends IterFlag, D, G>(
+  dnstr: TypeGuard<D, []> | null,
+  guard: TypeGuard<G, []>,
+  iter: I
+): SelGuard<I, D, G, TypeGuard<D | G, []>> => {
   // Set Downstream Guard
   const prstr = (guards.function(dnstr) ? dnstr : o => false) as TypeGuard<D, []>
   // Set Upstream Guard
   const upstr = (
     checkSetFlag(iter)
-      ? (o => prstr(o) || Object.values(o).every(guard)) as unknown as IG
-      : (o => prstr(o) || guard(o)) as TypeGuard<D | G, []>
-  ) as IterSel<
-    I,
-    GuardArrayOf<G, D> | GuardObjectOf<G, D>,
-    GuardArrayOf<G, D>,
-    GuardObjectOf<G, D>,
-    TypeGuard<D | G, []>
-  >
+      ? ((o: unknown) => prstr(o) || Object.values(o).every(guard)) as SelGuard<I, D, G, never>
+      : ((o: unknown) => prstr(o) || guard(o)) as SelGuard<I, D, G, TypeGuard<D | G, []>>
+  )
   // Return Upstream
   return upstr
 }
@@ -240,12 +265,12 @@ const upstreamGuardGenerator = <D, G, I extends IterFlag = null>(
 
 // Type-Guard Proxy-Function Generator
 const superGuardGenerator = <
-  G extends TypeGuard<TG, []>,
+  I extends IterFlag,
   D extends TypeGuard<TD, []>,
-  TG,
+  G extends TypeGuard<TG, []>,
   TD,
-  I extends IterFlag
->(guard: G, dnstr: D, iter?: I) => {
+  TG
+>(dnstr: D, guard: G, iter: I) => {
   // Return Proxy
   return new Proxy(guard, {
     apply(
@@ -259,7 +284,7 @@ const superGuardGenerator = <
     },
     get(target, p) {
       // Check Target Type
-      if (!guards.function(target)) return null
+      if (!guards.function(target)) return undefined
       // In Clause
       if (p === 'in') return new Proxy(
         superTarget as GuardHas<TG>,
@@ -281,71 +306,13 @@ const superGuardGenerator = <
       if (p === 'opt') {
         // Generate Recursive Type-Guard Proxy
         const upstr = upstreamGuardGenerator(target, guards.undefined, iter)
-        return superGuardGenerator(upstr, target, null)
+        return superGuardGenerator(target, upstr, null as null)
       }
       // Else
       return target[p]
     }
   }) as unknown as SuperGuard<G>
 }
-
-// ##########################################################################################################################
-
-// Proxy-Handler Helper Type
-type UPS<P, H> = P extends Types ? SuperGuard<H | Type<P>> : never
-
-// Type-Guards Proxy-Handler Generator
-const guardProxyHandler = <H, I extends IterFlag>(
-  dnstr: TypeGuard<H, []> | null,
-  iter: I
-): ProxyHandler<
-  IterSel<
-    I,
-    SuperGuards<H>['array']['of'] |
-    SuperGuards<H>['object']['of'],
-    SuperGuards<H>['array']['of'],
-    SuperGuards<H>['object']['of'],
-    SuperGuards<H>
-  >
-> => ({
-  // Or Call
-  apply<T extends GuardOrDescriptor>(
-    _target,
-    _thisArg,
-    args: [T]
-  ) {
-    if (args.length != 1) throw new Error('invalid arguments')
-    const [guard] = args
-    // Tranform GuardDescriptor
-    let _guard: TGGD<T>
-    if (guards.function(guard)) { _guard = guard as TGGD<T> }
-    else if (isGuardDescriptor(guard)) { _guard = guardFromDescriptor(guard) as TGGD<T> }
-    else throw new Error('invalid Guard-Descriptor')
-    // Generate Recursive Type-Guard Proxy
-    const upstr = upstreamGuardGenerator(dnstr, _guard, iter)
-    return superGuardGenerator(upstr, dnstr, null)
-  },
-  // Or Get
-  get<P extends string | symbol>(
-    _target, p: P
-  ): UPS<P, H> {
-    // Check if property exists
-    if (!guards.typeof(p)) return null
-    // Get Type-Guard
-    const guard = guards[p] as UPS<P, never>
-    // Check for Array Or Object
-    const flag = checkSetFlag(p) ? p : null
-    // Generate Recursive Type-Guard Proxy
-    const upstr = upstreamGuardGenerator(dnstr, guard, iter)
-    return superGuardGenerator(upstr, dnstr, flag) as UPS<P, H>
-  },
-  // General Methods
-  set(_target, _p, _value) { return null },
-  deleteProperty(_target, _p) { return null },
-  defineProperty(_target, _p, _attr) { return null },
-  ownKeys(_target) { return Object.keys(guards) },
-  has(_target, p) { return p in guards }
-})
 
 // ##########################################################################################################################
 
@@ -369,11 +336,73 @@ const guardHasProxyHandler = <H>(
 
 // ##########################################################################################################################
 
+// Proxy-Handler Helper Type
+type UPS<P, H> = P extends Types ? SuperGuard<H | Type<P>> : never
+
+// ##########################################################################################################################
+
+// Type-Guards Proxy-Handler Generator
+const guardProxyHandler = <H, I extends IterFlag>(
+  dnstr: TypeGuard<H, []> | null,
+  iter: I
+): ProxyHandler<
+  SelIter<
+    I,
+    SuperGuards<H>['array']['of'] |
+    SuperGuards<H>['object']['of'],
+    SuperGuards<H>['array']['of'],
+    SuperGuards<H>['object']['of'],
+    SuperGuards<H>
+  >
+> => ({
+  // Or Call
+  apply<T extends GuardOrDescriptor>(
+    _target,
+    _thisArg,
+    args: [T]
+  ) {
+    if (args.length != 1) throw new Error('invalid arguments')
+    const [guard] = args
+    // Tranform GuardDescriptor
+    let _guard: TGGD<T>
+    if (guards.function(guard)) { _guard = guard as TGGD<T> }
+    else if (isGuardDescriptor(guard)) { _guard = guardFromDescriptor(guard) as TGGD<T> }
+    else throw new Error('invalid Guard-Descriptor')
+    // Generate Recursive Type-Guard Proxy
+    const upstr = upstreamGuardGenerator(dnstr, _guard, iter)
+    return superGuardGenerator(dnstr, upstr, null as null)
+  },
+  // Or Get
+  get<P extends string | symbol>(
+    _target, p: P
+  ): UPS<P, H> {
+    // Check if property exists
+    if (!guards.typeof(p)) return null
+    // Get Type-Guard
+    const guard = guards[p] as UPS<P, never>
+    // Check for Array Or Object
+    const flag = checkSetFlag(p) ? p : null
+    // Generate Recursive Type-Guard Proxy
+    const upstr = upstreamGuardGenerator(dnstr, guard, iter)
+    return superGuardGenerator(dnstr, upstr, flag) as UPS<P, H>
+  },
+  // General Methods
+  set(_target, _p, _value) { return null },
+  deleteProperty(_target, _p) { return null },
+  defineProperty(_target, _p, _attr) { return null },
+  ownKeys(_target) { return Object.keys(guards) },
+  has(_target, p) { return p in guards }
+})
+
+// ##########################################################################################################################
+
 // Recursive Type-Guard Proxy
-export const superGuards = new Proxy(
+const superGuards = new Proxy(
   superTarget as SuperGuards,
   guardProxyHandler(null, null)
 )
+
+// ##########################################################################################################################
 
 // General Type-Guard Proxy
 export const is: Is = new Proxy(
@@ -400,57 +429,5 @@ export const is: Is = new Proxy(
     )
   }
 })
-
-// ##########################################################################################################################
-
-// Has-Property Type-Guard
-export function has<
-  K extends KeyOf,
-  T = unknown
->(
-  obj: unknown,
-  key: K | K[],
-  guard?: TypeGuard<T, []>
-): obj is Has<K, T> {
-  // Check Object
-  if (!guards.object(obj)) return false
-  // Set Check Function
-  const checkType = <P extends KeyOf>(
-    o: unknown, k: P
-  ): o is Has<P, T> => {
-    return guard ? guard(o[k]) : true
-  }
-  // Perform Key Check
-  const checkKey = (o: {}, k: KeyOf): o is Has<K, T> => {
-    if (o[k] === undefined) return false
-    if (k in o) return checkType(o, k)
-    if (Object.prototype.hasOwnProperty.call(o, k)) return checkType(o, k)
-    if (guards.string(k) && Object.keys(o).includes(k)) {
-      return checkType(o, k)
-    } else return false
-  }
-  // Return Check
-  if (!guards.array(key)) return checkKey(obj, key)
-  else return key.every(k => checkKey(obj, k))
-}
-
-// ##########################################################################################################################
-
-// Function-Return Type-Guard
-export function isReturn<R extends Types>(
-  typeName: R
-): <A extends ArgOf>(
-  obj: Callable<A>,
-  ...args: A
-) => obj is Callable<A, TypeOf<R>> {
-  // Set Type-Guard
-  const typeGuard = <A extends ArgOf>(
-    obj: Callable<A>,
-    ...args: A
-  ): obj is Callable<A, TypeOf<R>> => isType(obj(...args), typeName)
-
-  // Return Type-Guard
-  return typeGuard
-}
 
 // ##########################################################################################################################
