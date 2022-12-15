@@ -380,7 +380,7 @@ export function SuperConstructor<T>(value: T) {
 // Get Primary Types
 const primaryPrototype = typeof null
 export type PrimaryTypes = typeof primaryPrototype
-export type UnusualTypes = keyof UnusualTypesList
+export type ExtendedTypes = keyof ExtendedTypesList
 
 // Check Primary Types List
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -400,8 +400,8 @@ export interface PrimaryTypesList {
   function: Callable
 }
 
-// Set Unusual Types List
-export interface UnusualTypesList {
+// Set Extended Types List
+export interface ExtendedTypesList {
   never: never
   unknown: unknown
   null: null
@@ -417,7 +417,7 @@ export interface UnusualTypesList {
 }
 
 // Primary Type Symbols
-export type Types = PrimaryTypes | UnusualTypes
+export type Types = PrimaryTypes | ExtendedTypes
 
 // Primary Type Generator
 export type PrimaryType<N extends PrimaryTypes = PrimaryTypes> = (
@@ -432,9 +432,9 @@ export type PrimaryType<N extends PrimaryTypes = PrimaryTypes> = (
 
 // Type Generator
 export type Type<N extends Types = Types> = (
-  N extends UnusualTypes
+  N extends ExtendedTypes
     ? ValueOf<
-        { [P in UnusualTypes]: N extends P ? UnusualTypesList[P] : never }
+        { [P in ExtendedTypes]: N extends P ? ExtendedTypesList[P] : never }
       >
     : N extends PrimaryTypes
     ? PrimaryType<N>
@@ -445,7 +445,7 @@ export type Type<N extends Types = Types> = (
 type TypeOfIterator<V extends unknown, C extends boolean> = (
   ValueOf<
     {
-      [P in PrimaryTypes | UnusualTypes]: (
+      [P in PrimaryTypes | ExtendedTypes]: (
         Type<P> extends infer T
           ? unknown extends T
             ? undefined

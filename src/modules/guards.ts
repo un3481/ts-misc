@@ -10,7 +10,7 @@ import type {
   And,
   Types,
   PrimaryTypes,
-  UnusualTypes,
+  ExtendedTypes,
   TypeGuard,
   TypeGuardLike,
   Guards,
@@ -98,29 +98,26 @@ export const primaryGuards: Guards<PrimaryTypes> = {
   function: setGuard('function', Function)
 }
 
-// Unusual Type-Guard Object
-export const unusualGuards: Guards<UnusualTypes> = {
+// Extended Type-Guard Object
+export const extendedGuards: Guards<ExtendedTypes> = {
   any: (_obj => true) as TypeGuard<unknown>,
   never: (_obj => false) as TypeGuard<never>,
   unknown: (_obj => true) as TypeGuard<unknown>,
+  null: (obj => obj === null) as TypeGuard<null>,
   true: (obj => obj === true) as TypeGuard<true>,
   false: (obj => obj === false) as TypeGuard<false>,
   date: (obj => obj instanceof Date) as TypeGuard<Date>,
   array: (obj => Array.isArray(obj)) as TypeGuard<unknown[]>,
   regexp: (obj => obj instanceof RegExp) as TypeGuard<RegExp>,
-  null: (obj => obj === null) as TypeGuard<null>,
   promise: (obj => obj instanceof Promise) as TypeGuard<Promise<unknown>>,
-  typeof: (obj =>
-    primaryGuards.string(obj) &&
-    (obj in primaryGuards || obj in unusualGuards)) as TypeGuard<Types>,
-  keyof: (obj =>
-    ['string', 'number', 'symbol'].includes(typeof obj)) as TypeGuard<KeyOf>
+  typeof: (obj => (p => p.string(obj) && (obj in p || obj in extendedGuards))(primaryGuards)) as TypeGuard<Types>,
+  keyof: (obj => (p => p.string(obj) || p.number(obj) || p.symbol(obj))(primaryGuards)) as TypeGuard<KeyOf>
 }
 
 // General Type-Guard Object
 const guards: Guards = {
   ...primaryGuards,
-  ...unusualGuards
+  ...extendedGuards
 }
 
 /*
