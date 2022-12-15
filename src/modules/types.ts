@@ -284,7 +284,7 @@ type LoopBackSet<T> = {
   [x: number]: T | LoopBack<T>
   [x: symbol]: T | LoopBack<T> | boolean
 }
-type LoopBackArray<T> = (T | LoopBack<T>)[]
+type LoopBackArray<T> = (T | LoopBack<T>)[] | [...(T | LoopBack<T>)[]] | readonly [...(T | LoopBack<T>)[]]
 export type LoopBack<T> = LoopBackSet<T> | LoopBackArray<T>
 
 // ##########################################################################################################################

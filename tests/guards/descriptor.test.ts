@@ -25,12 +25,20 @@ describe('test SuperGuard from GuardDescriptor[object]', () => {
   // Assert Correct Type-Guard
   const _assertCustomTypeGuard: (obj: unknown) => obj is CustomUser = isCustomUser;
 
-  // Example of object with Custom Type
-  const example = {
+  // Examples of objects with Custom Type
+  const example1 = {
     id: 342,
     firstName: "Jhon",
     lastName: "Smith",
     active: true,
+    foo: "bar"
+  };
+  const example2 = {
+    id: 756,
+    firstName: "David",
+    lastName: "Richard",
+    joined: new Date("2013-08-06"),
+    active: false,
     foo: "bar"
   };
 
@@ -41,7 +49,8 @@ describe('test SuperGuard from GuardDescriptor[object]', () => {
     expect( isCustomUser(1)            ).toBe( false );
     expect( isCustomUser('test')       ).toBe( false );
     expect( isCustomUser({foo: "bar"}) ).toBe( false );
-    expect( isCustomUser(example)      ).toBe( true  );
+    expect( isCustomUser(example1)     ).toBe( true  );
+    expect( isCustomUser(example2)     ).toBe( true  );
   });
 
   test('test SuperGuard[custom-type]', () => {
@@ -51,7 +60,8 @@ describe('test SuperGuard from GuardDescriptor[object]', () => {
     expect( is(isCustomUser)(1)            ).toBe( false );
     expect( is(isCustomUser)('test')       ).toBe( false );
     expect( is(isCustomUser)({foo: "bar"}) ).toBe( false );
-    expect( is(isCustomUser)(example)      ).toBe( true  );
+    expect( is(isCustomUser)(example1)     ).toBe( true  );
+    expect( is(isCustomUser)(example2)     ).toBe( true  );
   });
 
   test('test SuperGuard[custom-type or string]', () => {
@@ -61,7 +71,8 @@ describe('test SuperGuard from GuardDescriptor[object]', () => {
     expect( is(isCustomUser).or.string(1)            ).toBe( false );
     expect( is(isCustomUser).or.string('test')       ).toBe( true  );
     expect( is(isCustomUser).or.string({foo: "bar"}) ).toBe( false );
-    expect( is(isCustomUser).or.string(example)      ).toBe( true  );
+    expect( is(isCustomUser).or.string(example1)     ).toBe( true  );
+    expect( is(isCustomUser).or.string(example2)     ).toBe( true  );
   });
 
   test('test SuperGuard[number or custom-type]', () => {
@@ -71,17 +82,18 @@ describe('test SuperGuard from GuardDescriptor[object]', () => {
     expect( is.number.or(isCustomUser)(1)            ).toBe( true  );
     expect( is.number.or(isCustomUser)('test')       ).toBe( false );
     expect( is.number.or(isCustomUser)({foo: "bar"}) ).toBe( false );
-    expect( is.number.or(isCustomUser)(example)      ).toBe( true  );
+    expect( is.number.or(isCustomUser)(example1)     ).toBe( true  );
+    expect( is.number.or(isCustomUser)(example2)     ).toBe( true  );
   });
 })
 
 describe('test SuperGuard from GuardDescriptor[array]', () => {
 
   // Custom Type
-  type CustomTuple = [
+  type CustomTuple = readonly [
     number,
     string,
-    Date,
+    Date | string,
     boolean,
     "foo"
   ];
@@ -90,20 +102,27 @@ describe('test SuperGuard from GuardDescriptor[array]', () => {
   const isCustomTuple = is([
     is.number,
     is.string,
-    is.date,
+    is.date.or.string,
     is.boolean,
-    (obj: unknown): obj is "bar" => { return obj === 'bar' }
+    (obj: unknown): obj is "foo" => { return obj === 'foo' }
   ] as const);
 
   // Assert Correct Type-Guard
   const _assertCustomTypeGuard: (obj: unknown) => obj is CustomTuple = isCustomTuple;
 
-  // Example of object with Custom Type
-  const example = [
+  // Examples of objects with Custom Type
+  const example1 = [
     878,
     "example",
-    new Date(),
+    new Date("2022-11-07"),
     true,
+    "foo"
+  ];
+  const example2 = [
+    291,
+    "unit testing",
+    "2022-06-23",
+    false,
     "foo"
   ];
 
@@ -114,7 +133,8 @@ describe('test SuperGuard from GuardDescriptor[array]', () => {
     expect( isCustomTuple(1)            ).toBe( false );
     expect( isCustomTuple('test')       ).toBe( false );
     expect( isCustomTuple({foo: "bar"}) ).toBe( false );
-    expect( isCustomTuple(example)      ).toBe( true  );
+    expect( isCustomTuple(example1)     ).toBe( true  );
+    expect( isCustomTuple(example2)     ).toBe( true  );
   });
 
   test('test SuperGuard[custom-type]', () => {
@@ -124,7 +144,8 @@ describe('test SuperGuard from GuardDescriptor[array]', () => {
     expect( is(isCustomTuple)(1)            ).toBe( false );
     expect( is(isCustomTuple)('test')       ).toBe( false );
     expect( is(isCustomTuple)({foo: "bar"}) ).toBe( false );
-    expect( is(isCustomTuple)(example)      ).toBe( true  );
+    expect( is(isCustomTuple)(example1)     ).toBe( true  );
+    expect( is(isCustomTuple)(example2)     ).toBe( true  );
   });
 
   test('test SuperGuard[custom-type or string]', () => {
@@ -134,7 +155,8 @@ describe('test SuperGuard from GuardDescriptor[array]', () => {
     expect( is(isCustomTuple).or.string(1)            ).toBe( false );
     expect( is(isCustomTuple).or.string('test')       ).toBe( true  );
     expect( is(isCustomTuple).or.string({foo: "bar"}) ).toBe( false );
-    expect( is(isCustomTuple).or.string(example)      ).toBe( true  );
+    expect( is(isCustomTuple).or.string(example1)     ).toBe( true  );
+    expect( is(isCustomTuple).or.string(example2)     ).toBe( true  );
   });
 
   test('test SuperGuard[number or custom-type]', () => {
@@ -144,6 +166,7 @@ describe('test SuperGuard from GuardDescriptor[array]', () => {
     expect( is.number.or(isCustomTuple)(1)            ).toBe( true  );
     expect( is.number.or(isCustomTuple)('test')       ).toBe( false );
     expect( is.number.or(isCustomTuple)({foo: "bar"}) ).toBe( false );
-    expect( is.number.or(isCustomTuple)(example)      ).toBe( true  );
+    expect( is.number.or(isCustomTuple)(example1)     ).toBe( true  );
+    expect( is.number.or(isCustomTuple)(example2)     ).toBe( true  );
   });
 })
