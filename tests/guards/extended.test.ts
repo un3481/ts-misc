@@ -80,4 +80,57 @@ describe('test ExtendedGuards', () => {
     expect( is.array(new Array(2))        ).toBe( true  );
     expect( is.array(new Array([1, '2'])) ).toBe( true  );
   });
+
+  test('test ExtendedGuards[regexp]', () => {
+    expect( is.regexp(null)             ).toBe( false );
+    expect( is.regexp({})               ).toBe( false );
+    expect( is.regexp(1)                ).toBe( false );
+    expect( is.regexp('')               ).toBe( false );
+    expect( is.regexp('1')              ).toBe( false );
+    expect( is.regexp(/\s/)             ).toBe( true  );
+    expect( is.regexp(RegExp('\s'))     ).toBe( true  );
+    expect( is.regexp(RegExp(/\s/))     ).toBe( true  );
+    expect( is.regexp(new RegExp('\s')) ).toBe( true  );
+    expect( is.regexp(new RegExp(/\s/)) ).toBe( true  );
+  });
+
+  test('test ExtendedGuards[promise]', async () => {
+    const example = new Promise(r => r(null));
+
+    expect( is.promise(null)                     ).toBe( false );
+    expect( is.promise({})                       ).toBe( false );
+    expect( is.promise(1)                        ).toBe( false );
+    expect( is.promise('')                       ).toBe( false );
+    expect( is.promise('1')                      ).toBe( false );
+    expect( is.promise(Promise)                  ).toBe( false );
+    expect( is.promise(example)                  ).toBe( true  );
+    expect( is.promise(example.then(v => null))  ).toBe( true  );
+    expect( is.promise(example.catch(e => null)) ).toBe( true  );
+    expect( is.promise(await example)            ).toBe( false );
+  });
+
+  test('test ExtendedGuards[typeof]', () => {
+    expect( is.typeof(null)      ).toBe( false );
+    expect( is.typeof({})        ).toBe( false );
+    expect( is.typeof(1)         ).toBe( false );
+    expect( is.typeof('')        ).toBe( false );
+    expect( is.typeof('foo')     ).toBe( false );
+    expect( is.typeof('string')  ).toBe( true  );
+    expect( is.typeof('number')  ).toBe( true  );
+    expect( is.typeof('promise') ).toBe( true  );
+    expect( is.typeof('time')    ).toBe( false );
+  });
+
+  test('test ExtendedGuards[keyof]', () => {
+    expect( is.keyof(null)            ).toBe( false );
+    expect( is.keyof({})              ).toBe( false );
+    expect( is.keyof([])              ).toBe( false );
+    expect( is.keyof(1)               ).toBe( true  );
+    expect( is.keyof('')              ).toBe( true  );
+    expect( is.keyof('foo')           ).toBe( true  );
+    expect( is.keyof('bar')           ).toBe( true  );
+    expect( is.keyof('1')             ).toBe( true  );
+    expect( is.keyof(Symbol('foo'))   ).toBe( true  );
+    expect( is.keyof(Symbol.iterator) ).toBe( true  );
+  });
 })

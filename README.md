@@ -75,9 +75,10 @@ type HelloWorld = { hello: "world" }
 
 // A standard Type-Guard for a custom type
 function isHelloWorld(obj: unknown): obj is HelloWorld {
+  if (!obj) return false
   if (typeof obj != 'object') return false
-  if (!('hello' in obj)) reutrn false
-  if (obj.hello != 'world') return false
+  if (!('hello' in obj)) return false
+  if (obj['hello'] != 'world') return false
   else return true
 }
 ```

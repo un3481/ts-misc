@@ -1,29 +1,29 @@
 import { handles } from '../src/index'
-import { TSafe } from '../src/modules/handles'
 
-describe('test Handles', () => {
+describe('test Handles[safe]', () => {
+  
+  // Test Type
+  type StringSafeReturn = (v: string) => Promise<readonly [string, Error]>
 
-  test('test Handle.Safe[success]', async () => {
-    const expectOk: TSafe<[v: string], string> =
-      handles.safe((v: string) => v);
-    
-    const resultOk = await expectOk("1234");
+  test('test Handles[safe] on success', async () => {
+    const unsafe = (v: string) => v;
+    const safe: StringSafeReturn = handles.safe(unsafe);
+    const result = await safe("1234");
 
-    expect( Array.isArray(resultOk) ).toBe( true      );
-    expect( resultOk.length         ).toBe( 2         );
-    expect( resultOk[0]             ).toBe( "1234"    );
-    expect( resultOk[1]             ).toBe( undefined );
+    expect( Array.isArray(result) ).toBe( true      );
+    expect( result.length         ).toBe( 2         );
+    expect( result[0]             ).toBe( "1234"    );
+    expect( result[1]             ).toBe( undefined );
   });
 
-  test('test Handle.Safe[error]', async () => {
-    const expectError: TSafe<[v: string], never> =
-       handles.safe((v: string) => { throw new Error(v) });
+  test('test Handles[safe] on error', async () => {
+    const unsafe = (v: string) => { if (v) { throw new Error(v) } else return v };
+    const safe: StringSafeReturn = handles.safe(unsafe);
+    const result = await safe("5678");
 
-    const resultError = await expectError("5678");
-
-    expect( Array.isArray(resultError) ).toBe( true                     );
-    expect( resultError.length         ).toBe( 2                        );
-    expect( resultError[0]             ).toBe( undefined                );
-    expect( resultError[1].toString()  ).toBe( Error("5678").toString() );
+    expect( Array.isArray(result) ).toBe( true                     );
+    expect( result.length         ).toBe( 2                        );
+    expect( result[0]             ).toBe( undefined                );
+    expect( result[1].toString()  ).toBe( Error("5678").toString() );
   });
 })
