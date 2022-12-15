@@ -93,7 +93,7 @@ export const primaryGuards: Guards<PrimaryTypes> = {
   number: setGuard('number', Number),
   bigint: setGuard('bigint', BigInt),
   symbol: setGuard('symbol', Symbol),
-  object: (o => (setGuard('object', Object)(o) && o)) as TypeGuard<{}>,
+  object: (o => (o || false) && setGuard('object', Object)(o)) as TypeGuard<{}>,
   boolean: setGuard('boolean', Boolean),
   function: setGuard('function', Function)
 }

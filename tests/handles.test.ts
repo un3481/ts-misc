@@ -2,6 +2,7 @@ import { handles } from '../src/index'
 import { TSafe } from '../src/modules/handles'
 
 describe('test Handles', () => {
+
   test('test Handle.Safe[success]', async () => {
     const expectOk: TSafe<[v: string], string> =
       handles.safe((v: string) => v);
