@@ -1,5 +1,6 @@
 [![CI](https://github.com/un3481/ts-misc/actions/workflows/CI.yml/badge.svg)](https://github.com/un3481/ts-misc/actions/workflows/CI.yml)
 
+---
 # ts-misc
 Typescript Miscellaneous Library
 
@@ -244,4 +245,5 @@ if (isCustomUser(example)) {
 The `is` Proxy is a callable object and, if you pass it a correct `GuardDescriptor` like in the examples above, it will be able to build a new Type-Guard matching the descriptor's keys.
 
 This should make the use of Type-Guards really simple and quick. And there's no overhead since you can always ensure the resulting Type-Guard matches a given Type.
+
 ---
