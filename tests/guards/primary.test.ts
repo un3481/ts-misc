@@ -2,6 +2,8 @@ import { is } from '../../src/modules/guards'
 
 describe('test PrimaryGuards', () => {
 
+  const assertType1: (o) => o is undefined = is.undefined;
+
   test('test PrimaryGuards[undefined]', () => {
     expect( is.undefined(null)         ).toBe( false );
     expect( is.undefined(undefined)    ).toBe( true  );
@@ -12,6 +14,8 @@ describe('test PrimaryGuards', () => {
     expect( is.undefined('')           ).toBe( false );
     expect( is.undefined('1')          ).toBe( false );
   });
+
+  const assertType2: (o) => o is string = is.string;
 
   test('test PrimaryGuards[string]', () => {
     expect( is.string(null)            ).toBe( false );
@@ -27,6 +31,8 @@ describe('test PrimaryGuards', () => {
     expect( is.string(new String(1))   ).toBe( true  );
     expect( is.string(new String('1')) ).toBe( true  );
   });
+
+  const assertType3: (o) => o is number = is.number;
 
   test('test PrimaryGuards[number]', () => {
     expect( is.number(null)            ).toBe( false );
@@ -45,6 +51,8 @@ describe('test PrimaryGuards', () => {
     expect( is.number(BigInt('1'))     ).toBe( false );
   });
 
+  const assertType4: (o) => o is bigint = is.bigint;
+
   test('test PrimaryGuards[bigint]', () => {
     expect( is.bigint(null)            ).toBe( false );
     expect( is.bigint(undefined)       ).toBe( false );
@@ -62,6 +70,8 @@ describe('test PrimaryGuards', () => {
     expect( is.bigint(BigInt('1'))     ).toBe( true  );
   });
 
+  const assertType5: (o) => o is symbol = is.symbol;
+
   test('test PrimaryGuards[symbol]', () => {
     expect( is.symbol(null)               ).toBe( false );
     expect( is.symbol(undefined)          ).toBe( false );
@@ -75,6 +85,8 @@ describe('test PrimaryGuards', () => {
     expect( is.symbol(Symbol.iterator)    ).toBe( true  );
     expect( is.symbol(Symbol.hasInstance) ).toBe( true  );
   });
+
+  const assertType6: (o) => o is {} = is.object;
 
   test('test PrimaryGuards[object]', () => {
     expect( is.object(null)            ).toBe( false );
@@ -98,6 +110,8 @@ describe('test PrimaryGuards', () => {
     expect( is.object(new String('1')) ).toBe( true  );
   });
 
+  const assertType7: (o) => o is boolean = is.boolean;
+
   test('test PrimaryGuards[boolean]', () => {
     expect( is.boolean(null)         ).toBe( false );
     expect( is.boolean(undefined)    ).toBe( false );
@@ -112,10 +126,12 @@ describe('test PrimaryGuards', () => {
     expect( is.boolean(1 + 1 == 2)   ).toBe( true  );
   });
 
-  test('test PrimaryGuards[function]', () => {
-    const anonymous = (() => null);
-    function named() { return null };
+  const anonymous = (() => null);
+  function named() { return null };
 
+  const assertType8: (o) => o is ((...args: unknown[]) => unknown) = is.function;
+
+  test('test PrimaryGuards[function]', () => {
     expect( is.function(null)         ).toBe( false );
     expect( is.function(undefined)    ).toBe( false );
     expect( is.function({})           ).toBe( false );

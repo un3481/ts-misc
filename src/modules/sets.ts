@@ -7,7 +7,7 @@
 // Imports
 import fs from 'fs'
 import { is } from './guards'
-import { safeSync } from './handles'
+import { safe } from './handles'
 import { SuperConstructor } from './types'
 
 // Type Imports
@@ -82,34 +82,36 @@ export class AccessJSON {
   // Read-JSON Method
   read() {
     // Read-File Function
-    const readFile = safeSync(
+    const readFile = safe(
       (_p: string) => fs.readFileSync(_p).toString()
     )
     // Read File
-    const [file, readFileError] = readFile(this.path)
+    let [ok, file] = readFile(this.path)
     // Parse Json
     let value: PrimitiveJSON = null
-    try {
-      value = JSON.parse(file) as PrimitiveJSON
-    } catch(e) {}
+    if (ok) {
+      try {
+        value = JSON.parse(file as string) as PrimitiveJSON
+      } catch(e) { ok = false }
+    }
     // Make Return a Object
     const obj = SuperConstructor(value)
     // Return Object
-    return [obj, readFileError] as const
+    return [ok, obj] as const
   }
 
   // Read-JSON Method
   write(json: unknown) {
     // Read-File Function
-    const writeFile = safeSync(
+    const writeFile = safe(
       (_p: string, _o: string) => fs.writeFileSync(_p, _o)
     )
     // Serialize Object
     const strgfy = JSON.stringify(serialize(json))
     // Write File
-    const [none, writeFileError] = writeFile(this.path, strgfy)
+    const [ok, error] = writeFile(this.path, strgfy)
     // Return Status
-    return true && !writeFileError
+    return ok
   }
 }
 
@@ -125,46 +127,46 @@ export function proxyJSON(path: string) {
   // Return Proxy
   return new Proxy({}, {
     get(_target, p) {
-      const [obj, error] = file.read()
-      if (is.null(obj)) return
+      const [ok, obj] = file.read()
+      if (!ok) return undefined
       return obj[p]
     },
     set(_target, p, value) {
-      const [obj, error] = file.read()
-      if (is.null(obj)) return
+      const [ok, obj] = file.read()
+      if (!ok) return false
       obj[p] = value
       return file.write(obj)
     },
     deleteProperty(_target, p) {
-      const [obj, error] = file.read()
-      if (is.null(obj)) return
+      const [ok, obj] = file.read()
+      if (!ok) return false
       delete obj[p]
       return file.write(obj)
     },
     enumerate(_target, p) {
-      const [obj, error] = file.read()
-      if (is.null(obj)) return
+      const [ok, obj] = file.read()
+      if (!ok) return undefined
       return Object.keys(obj)
     },
     ownKeys(_target, p) {
-      const [obj, error] = file.read()
-      if (is.null(obj)) return
+      const [ok, obj] = file.read()
+      if (!ok) return undefined
       return Object.keys(obj)
     },
     has(_target, p) {
-      const [obj, error] = file.read()
-      if (is.null(obj)) return
+      const [ok, obj] = file.read()
+      if (!ok) return undefined
       return p in obj || is.in(obj, p)
     },
     defineProperty(_target, p, desc) {
-      const [obj, readRrror] = file.read()
-      if (is.null(obj)) return
+      const [ok, obj] = file.read()
+      if (!ok) return undefined
       if (desc && is.in(desc, 'value')) obj[p] = desc.value
       if (file.write(obj)) return obj
     },
     getOwnPropertyDescriptor(_target, p) {
-      const [obj, error] = file.read()
-      if (is.null(obj)) return
+      const [ok, obj] = file.read()
+      if (!ok) return undefined
       const value = obj[p]
       const desc: PropertyDescriptor = {
         value: value,

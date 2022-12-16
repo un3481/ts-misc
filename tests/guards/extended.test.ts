@@ -1,6 +1,9 @@
 import { is } from '../../src/modules/guards'
+import { Types } from '../../src/modules/types';
 
 describe('test ExtendedGuards', () => {
+
+  const assertType1: (o) => o is unknown = is.any;
 
   test('test ExtendedGuards[any]', () => {
     expect( is.any(null) ).toBe( true );
@@ -9,6 +12,8 @@ describe('test ExtendedGuards', () => {
     expect( is.any('')   ).toBe( true );
   });
 
+  const assertType2: (o) => o is never = is.never;
+
   test('test ExtendedGuards[never]', () => {
     expect( is.never(null) ).toBe( false );
     expect( is.never({})   ).toBe( false );
@@ -16,12 +21,16 @@ describe('test ExtendedGuards', () => {
     expect( is.never('')   ).toBe( false );
   });
 
+  const assertType3: (o) => o is unknown = is.unknown;
+
   test('test ExtendedGuards[unknown]', () => {
     expect( is.unknown(null) ).toBe( true );
     expect( is.unknown({})   ).toBe( true );
     expect( is.unknown(1)    ).toBe( true );
     expect( is.unknown('')   ).toBe( true );
   });
+
+  const assertType4: (o) => o is null = is.null;
 
   test('test ExtendedGuards[null]', () => {
     expect( is.null(null)         ).toBe( true  );
@@ -34,6 +43,8 @@ describe('test ExtendedGuards', () => {
     expect( is.null('1')          ).toBe( false );
   });
 
+  const assertType5: (o) => o is true = is.true;
+
   test('test ExtendedGuards[true]', () => {
     expect( is.true(null)   ).toBe( false );
     expect( is.true({})     ).toBe( false );
@@ -44,6 +55,8 @@ describe('test ExtendedGuards', () => {
     expect( is.true(true)   ).toBe( true  );
     expect( is.true(false)  ).toBe( false );
   });
+
+  const assertType6: (o) => o is false = is.false;
 
   test('test ExtendedGuards[false]', () => {
     expect( is.false(null)    ).toBe( false );
@@ -56,6 +69,8 @@ describe('test ExtendedGuards', () => {
     expect( is.false(false)   ).toBe( true  );
   });
 
+  const assertType7: (o) => o is Date = is.date;
+
   test('test ExtendedGuards[date]', () => {
     expect( is.date(null)                   ).toBe( false );
     expect( is.date({})                     ).toBe( false );
@@ -66,6 +81,8 @@ describe('test ExtendedGuards', () => {
     expect( is.date(new Date())             ).toBe( true  );
     expect( is.date(new Date("2022-03-25")) ).toBe( true  );
   });
+
+  const assertType8: (o) => o is unknown[] = is.array;
 
   test('test ExtendedGuards[array]', () => {
     expect( is.array(null)                ).toBe( false );
@@ -81,6 +98,8 @@ describe('test ExtendedGuards', () => {
     expect( is.array(new Array([1, '2'])) ).toBe( true  );
   });
 
+  const assertType9: (o) => o is RegExp = is.regexp;
+
   test('test ExtendedGuards[regexp]', () => {
     expect( is.regexp(null)             ).toBe( false );
     expect( is.regexp({})               ).toBe( false );
@@ -93,6 +112,8 @@ describe('test ExtendedGuards', () => {
     expect( is.regexp(new RegExp('\s')) ).toBe( true  );
     expect( is.regexp(new RegExp(/\s/)) ).toBe( true  );
   });
+
+  const assertType10: (o) => o is Promise<unknown> = is.promise;
 
   test('test ExtendedGuards[promise]', async () => {
     const example = new Promise(r => r(null));
@@ -109,6 +130,8 @@ describe('test ExtendedGuards', () => {
     expect( is.promise(await example)            ).toBe( false );
   });
 
+  const assertType11: (o) => o is Types = is.typeof;
+
   test('test ExtendedGuards[typeof]', () => {
     expect( is.typeof(null)      ).toBe( false );
     expect( is.typeof({})        ).toBe( false );
@@ -120,6 +143,8 @@ describe('test ExtendedGuards', () => {
     expect( is.typeof('promise') ).toBe( true  );
     expect( is.typeof('time')    ).toBe( false );
   });
+
+  const assertType12: (o) => o is (string | number | symbol) = is.keyof;
 
   test('test ExtendedGuards[keyof]', () => {
     expect( is.keyof(null)            ).toBe( false );

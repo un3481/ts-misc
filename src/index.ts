@@ -19,7 +19,6 @@ import * as Handles from './modules/handles'
 import * as Guards  from './modules/guards'
 import * as Types   from './modules/types'
 import * as Sets    from './modules/sets'
-import * as Sync    from './modules/sync'
 
 // ##########################################################################################################################
 
@@ -30,7 +29,6 @@ export const handles = Handles
 export const guards  = Guards
 export const types   = Types
 export const sets    = Sets
-export const sync    = Sync
 export const is      = Guards.is
 
 // Default Exports
@@ -41,7 +39,6 @@ export default {
   guards:  Guards,
   types:   Types,
   sets:    Sets,
-  sync:    Sync,
   is:      Guards.is
 }
 

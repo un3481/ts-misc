@@ -495,7 +495,7 @@ export interface ObjectGuardMethods<H> {
 
 // Recursive-Array-Guards Property Type
 export interface ArrayGuardMethods<H> {
-  of: (<T extends GuardOrDescriptor>(guard: T) => (ArrayIterGuard<TypeFromGuardOrDescriptor<T>, H> & GuardMethods<T[] | H>))
+  of: (<T extends GuardOrDescriptor>(guard: T) => (ArrayIterGuard<TypeFromGuardOrDescriptor<T>, H> & GuardMethods<TypeFromGuardOrDescriptor<T>[] | H>))
   & { [K in Types]: ArrayIterGuard<Type<K>, H> & GuardMethods<Type<K>[] | H> }
 }
 
