@@ -132,12 +132,12 @@ export const safe = <
 // Try something
 export const repeat = async <T>(
   fun: () => T,
-  verify: (value: T) => boolean | Promise<boolean>,
+  verify: (value: Await<T>) => boolean | Promise<boolean>,
   loop: number = 3,
   delay: number = 0
-): Promise<T> => {
+): Promise<Await<T>> => {
   // Safe Functions
-  const sfun = safe(fun)
+  const sfun = safe(fun).async
   const sverify = safe(verify).async
   // Repeat Loop
   let i = 0
@@ -145,13 +145,13 @@ export const repeat = async <T>(
     // Yield control back to Event Loop and wait delay
     if (i > 0) await new Promise(resolve => setTimeout(resolve, delay))
     // execute function
-    const [ok, value] = sfun()
+    const [ok, value] = await sfun()
     // if no error occurred
     if (ok) {
       // execute verify
-      const [ok, cond] = await sverify(value as T)
+      const [ok, cond] = await sverify(value as Await<T>)
       // check for result
-      if (ok && cond) return value as T
+      if (ok && cond) return value as Await<T>
     }
     i++
   }
