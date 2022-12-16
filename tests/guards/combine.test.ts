@@ -25,6 +25,92 @@ describe('test SuperGuard combined', () => {
     expect( is.array.or.number(Number('1')) ).toBe( true  );
     expect( is.array.or.number(new Date())  ).toBe( false );
   });
+
+  test('test SuperGuard[number or string]', () => {
+    expect( is.number.or.string.or.object(null)        ).toBe( false );
+    expect( is.number.or.string.or.object({})          ).toBe( true  );
+    expect( is.number.or.string.or.object(0)           ).toBe( true  );
+    expect( is.number.or.string.or.object(1)           ).toBe( true  );
+    expect( is.number.or.string.or.object('')          ).toBe( true  );
+    expect( is.number.or.string.or.object('test')      ).toBe( true  );
+    expect( is.number.or.string.or.object(Number('1')) ).toBe( true  );
+    expect( is.number.or.string.or.object(new Date())  ).toBe( true  );
+  });
+})
+
+describe('test SuperGuard iterator', () => {
+
+  test('test SuperGuard[array of string]', () => {
+    expect( is.array.of.string(null)            ).toBe( false );
+    expect( is.array.of.string({})              ).toBe( false );
+    expect( is.array.of.string(0)               ).toBe( false );
+    expect( is.array.of.string(1)               ).toBe( false );
+    expect( is.array.of.string('')              ).toBe( false );
+    expect( is.array.of.string('test')          ).toBe( false );
+    expect( is.array.of.string([1, '2'])        ).toBe( false );
+    expect( is.array.of.string([1, 5, 3])       ).toBe( false );
+    expect( is.array.of.string(['a', '4', 'e']) ).toBe( true  );
+  });
+
+  test('test SuperGuard[number or array of string]', () => {
+    expect( is.number.or.array.of.string(null)            ).toBe( false );
+    expect( is.number.or.array.of.string({})              ).toBe( false );
+    expect( is.number.or.array.of.string(0)               ).toBe( true  );
+    expect( is.number.or.array.of.string(1)               ).toBe( true  );
+    expect( is.number.or.array.of.string('')              ).toBe( false );
+    expect( is.number.or.array.of.string('test')          ).toBe( false );
+    expect( is.number.or.array.of.string([1, '2'])        ).toBe( false );
+    expect( is.number.or.array.of.string([1, 5, 3])       ).toBe( false );
+    expect( is.number.or.array.of.string(['a', '4', 'e']) ).toBe( true  );
+  });
+
+    test('test SuperGuard[array of string or number]', () => {
+    expect( is.array.of.string.or.number(null)            ).toBe( false );
+    expect( is.array.of.string.or.number({})              ).toBe( false );
+    expect( is.array.of.string.or.number(0)               ).toBe( true  );
+    expect( is.array.of.string.or.number(1)               ).toBe( true  );
+    expect( is.array.of.string.or.number('')              ).toBe( false );
+    expect( is.array.of.string.or.number('test')          ).toBe( false );
+    expect( is.array.of.string.or.number([1, '2'])        ).toBe( false );
+    expect( is.array.of.string.or.number([1, 5, 3])       ).toBe( false );
+    expect( is.array.of.string.or.number(['a', '4', 'e']) ).toBe( true  );
+  });
+
+  test('test SuperGuard[array of number]', () => {
+    expect( is.array.of.number(null)            ).toBe( false );
+    expect( is.array.of.number({})              ).toBe( false );
+    expect( is.array.of.number(0)               ).toBe( false );
+    expect( is.array.of.number(1)               ).toBe( false );
+    expect( is.array.of.number('')              ).toBe( false );
+    expect( is.array.of.number('test')          ).toBe( false );
+    expect( is.array.of.number([1, '2'])        ).toBe( false );
+    expect( is.array.of.number([1, 5, 3])       ).toBe( true  );
+    expect( is.array.of.number(['a', '4', 'e']) ).toBe( false );
+  });
+
+  test('test SuperGuard[string or array of number]', () => {
+    expect( is.string.or.array.of.number(null)            ).toBe( false );
+    expect( is.string.or.array.of.number({})              ).toBe( false );
+    expect( is.string.or.array.of.number(0)               ).toBe( false );
+    expect( is.string.or.array.of.number(1)               ).toBe( false );
+    expect( is.string.or.array.of.number('')              ).toBe( true  );
+    expect( is.string.or.array.of.number('test')          ).toBe( true  );
+    expect( is.string.or.array.of.number([1, '2'])        ).toBe( false );
+    expect( is.string.or.array.of.number([1, 5, 3])       ).toBe( true  );
+    expect( is.string.or.array.of.number(['a', '4', 'e']) ).toBe( false );
+  });
+
+  test('test SuperGuard[array of number or string]', () => {
+    expect( is.array.of.number.or.string(null)            ).toBe( false );
+    expect( is.array.of.number.or.string({})              ).toBe( false );
+    expect( is.array.of.number.or.string(0)               ).toBe( false );
+    expect( is.array.of.number.or.string(1)               ).toBe( false );
+    expect( is.array.of.number.or.string('')              ).toBe( true  );
+    expect( is.array.of.number.or.string('test')          ).toBe( true  );
+    expect( is.array.of.number.or.string([1, '2'])        ).toBe( false );
+    expect( is.array.of.number.or.string([1, 5, 3])       ).toBe( true  );
+    expect( is.array.of.number.or.string(['a', '4', 'e']) ).toBe( false );
+  });
 })
 
 describe('test SuperGuard combined with custom TypeGuard', () => {

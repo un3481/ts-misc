@@ -280,7 +280,7 @@ const IterGuardGenerator = <
   G extends TypeGuard<unknown, []>
 >(
   prev: D | null,
-  next: G,
+  guard: G,
   iter: I
 ): (
   IterGuard<I, TypeFromGuard<G>, TypeFromGuard<D>>
@@ -290,12 +290,12 @@ const IterGuardGenerator = <
   // Set Upstream Guard
   if (iter == 'array') {
     return (
-      (o: unknown) => (_prev(o) || (guards.array(o) && o.every(next)) || false) && true
+      (o: unknown) => (_prev(o) || (guards.array(o) && o.every(guard)) || false) && true
     ) as IterGuard<I, TypeFromGuard<G>, TypeFromGuard<D>>
   }
   if (iter == 'object') {
     return (
-      (o: unknown) => (_prev(o) || Object.values(o).every(next) || false) && true
+      (o: unknown) => (_prev(o) || (guards.object(o) && Object.values(o).every(guard)) || false) && true
     ) as IterGuard<I, TypeFromGuard<G>, TypeFromGuard<D>>
   }
 }
@@ -374,7 +374,7 @@ const OrProxyHandler = <
     // Check for Array Or Object
     if (checkIterFlag(p)) {
       return new Proxy(
-        tar, IterGuardProxyHandler(next, p)
+        tar, IterGuardProxyHandler(prev, next, p)
       )
     } else {
       return new Proxy(
@@ -507,8 +507,10 @@ const GuardProxyHandler = <
 // Iter SuperGuard Proxy
 const IterGuardProxyHandler = <
   I extends IterFlag,
+  B extends TypeGuard<unknown, []>,
   G extends TypeGuard<unknown, []>
 >(
+  prev: B | null,
   guard: G,
   iter: I
 ): (
@@ -530,8 +532,8 @@ const IterGuardProxyHandler = <
       // Of Clause
       if (p === 'of') {
         return new Proxy(
-          tar as SuperGuards<TypeFromGuard<G>>[I]['of'],
-          OfProxyHandler(guard, iter)
+          tar as SuperGuards<TypeFromGuard<B> | TypeFromGuard<G>>[I]['of'],
+          OfProxyHandler(prev, iter)
         )
       }
       // Else
