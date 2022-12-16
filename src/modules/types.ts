@@ -539,11 +539,17 @@ export type GuardDescriptor<
       ? {
         [K in keyof S as Exclude<K, typeof opt>]-?: (
           S[K] extends (infer I)
-            ? I extends (any | null | undefined)
-              ? TypeGuard<I, []>
-              : I extends ReadonlyInclude<unknown[] | Set>
-                ? GuardDescriptor<I>
-                : TypeGuard<I, []>
+            ? boolean extends I
+              ? TypeGuard<boolean, []>
+              : true extends I
+                ? TypeGuard<true, []>
+                : false extends I
+                  ? TypeGuard<false, []>
+                  :  I extends (any | null | undefined)
+                    ? TypeGuard<I, []>
+                    : I extends ReadonlyInclude<unknown[] | Set>
+                      ? GuardDescriptor<I>
+                      : TypeGuard<I, []>
             : never
         )
       }
@@ -552,11 +558,17 @@ export type GuardDescriptor<
           ? {
             [K in keyof S as Exclude<K, typeof opt>]-?: And<(
               S[K] extends (infer I)
-                ? I extends (any | null | undefined)
-                  ? TypeGuard<I, []>
-                  : I extends ReadonlyInclude<unknown[] | Set>
-                    ? GuardDescriptor<I>
-                    : TypeGuard<I, []>
+                ? boolean extends I
+                  ? TypeGuard<boolean, []>
+                  : true extends I
+                    ? TypeGuard<true, []>
+                    : false extends I
+                      ? TypeGuard<false, []>
+                      : I extends (any | null | undefined)
+                        ? TypeGuard<I, []>
+                        : I extends ReadonlyInclude<unknown[] | Set>
+                          ? GuardDescriptor<I>
+                          : TypeGuard<I, []>
                 : never
             ) & (
               K extends keyof P

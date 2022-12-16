@@ -1,4 +1,5 @@
 import { is } from '../../src/modules/guards'
+import { GuardDescriptor, TypeFromGuardDescriptor } from '../../src/modules/types';
 
 describe('test SuperGuard from GuardDescriptor[object]', () => {
 
@@ -168,5 +169,73 @@ describe('test SuperGuard from GuardDescriptor[array]', () => {
     expect( is.number.or(isCustomTuple)({foo: "bar"}) ).toBe( false );
     expect( is.number.or(isCustomTuple)(example1)     ).toBe( true  );
     expect( is.number.or(isCustomTuple)(example2)     ).toBe( true  );
+  });
+})
+
+describe('test SuperGuard from inline GuardDescriptor[object]', () => {
+
+  // Custom Type
+  type CustomRecord = {
+    id: number
+    token: string
+    success?: boolean
+    done?: boolean
+  };
+
+  // Create a Type-Guard for Custom Type
+  const customRecord = {
+    id: is.number,
+    token: is.string,
+    success: is.boolean.opt,
+    done: is.boolean.opt
+  };
+
+  // Assert Correct Type-Guard
+  const _assertCustomTypeGuard: GuardDescriptor<CustomRecord> = customRecord;
+
+  // Examples of objects with Custom Type
+  const example1 = {
+    id: 758,
+    token: "U78545FXSA",
+    done: false,
+  };
+  const example2 = {
+    id: 758,
+    token: "U355XNTYSA",
+    done: true,
+    success: true
+  };
+
+  test('test SuperGuard[custom-type]', () => {
+    expect( is(customRecord)(null)         ).toBe( false );
+    expect( is(customRecord)({})           ).toBe( false );
+    expect( is(customRecord)([1, '2'])     ).toBe( false );
+    expect( is(customRecord)(1)            ).toBe( false );
+    expect( is(customRecord)('test')       ).toBe( false );
+    expect( is(customRecord)({foo: "bar"}) ).toBe( false );
+    expect( is(customRecord)(example1)     ).toBe( true  );
+    expect( is(customRecord)(example2)     ).toBe( true  );
+  });
+
+  test('test SuperGuard[custom-type or string]', () => {
+    expect( is(customRecord).or.string(null)         ).toBe( false );
+    expect( is(customRecord).or.string({})           ).toBe( false );
+    expect( is(customRecord).or.string([1, '2'])     ).toBe( false );
+    expect( is(customRecord).or.string(1)            ).toBe( false );
+    expect( is(customRecord).or.string('test')       ).toBe( true  );
+    expect( is(customRecord).or.string({foo: "bar"}) ).toBe( false );
+    expect( is(customRecord).or.string(example1)     ).toBe( true  );
+    expect( is(customRecord).or.string(example2)     ).toBe( true  );
+  });
+
+  test('test SuperGuard[number or custom-type]', () => {
+    expect( is.number.or(customRecord)(null)         ).toBe( false );
+    expect( is.number.or(customRecord)({})           ).toBe( false );
+    expect( is.number.or(customRecord)([1, '2'])     ).toBe( false );
+    expect( is.number.or(customRecord)(1)            ).toBe( true  );
+    expect( is.number.or(customRecord)('test')       ).toBe( false );
+    expect( is.number.or(customRecord)({foo: "bar"}) ).toBe( false );
+    expect( is.number.or(customRecord)(example1)     ).toBe( true  );
+    expect( is.number.or(customRecord)(example2)     ).toBe( true  );
   });
 })
