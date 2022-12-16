@@ -453,7 +453,7 @@ export type Guards<T extends Types = Types> = {
 }
 
 // Set-Has Guard
-export type GuardHas<T> = (
+export type HasGuard<T> = (
   <K extends KeyOf>(
     obj: unknown,
     key: K | K[],
@@ -461,14 +461,14 @@ export type GuardHas<T> = (
 )
 
 // Set Object Guard
-export type GuardObjectOf<T, H = never> = (
+export type ObjectIterGuard<T, H = never> = (
   <O extends Set = {}>(
     obj: unknown
   ) => obj is H | And<O | { [K in keyof O]: T }>
 )
 
 // Set Array Guard
-export type GuardArrayOf<T, H = never> = (
+export type ArrayIterGuard<T, H = never> = (
   <A extends unknown[] = unknown[]>(
     obj: unknown
   ) => obj is H | And<A &
@@ -482,21 +482,21 @@ export type GuardArrayOf<T, H = never> = (
 
 // Recursive-Guards Property Type
 export interface GuardMethods<H> {
-  in: GuardHas<H>
+  in: HasGuard<H>
   or: SuperGuards<H>
   opt: SuperGuard<H> & { [opt]: true }
 }
 
 // Recursive-Object-Guards Property Type
 export interface ObjectGuardMethods<H> {
-  of: (<T extends GuardOrDescriptor>(guard: T) => (GuardObjectOf<TypeFromGuardOrDescriptor<T>, H> & GuardMethods<{} | H>))
-  & { [K in Types]: GuardObjectOf<Type<K>, H> & GuardMethods<{} | H> }
+  of: (<T extends GuardOrDescriptor>(guard: T) => (ObjectIterGuard<TypeFromGuardOrDescriptor<T>, H> & GuardMethods<{} | H>))
+  & { [K in Types]: ObjectIterGuard<Type<K>, H> & GuardMethods<{} | H> }
 }
 
 // Recursive-Array-Guards Property Type
 export interface ArrayGuardMethods<H> {
-  of: (<T extends GuardOrDescriptor>(guard: T) => (GuardArrayOf<TypeFromGuardOrDescriptor<T>, H> & GuardMethods<T[] | H>))
-  & { [K in Types]: GuardArrayOf<Type<K>, H> & GuardMethods<Type<K>[] | H> }
+  of: (<T extends GuardOrDescriptor>(guard: T) => (ArrayIterGuard<TypeFromGuardOrDescriptor<T>, H> & GuardMethods<T[] | H>))
+  & { [K in Types]: ArrayIterGuard<Type<K>, H> & GuardMethods<Type<K>[] | H> }
 }
 
 // Helper for High-Depth Prevention
@@ -619,7 +619,7 @@ export type TypeFromGuardOrDescriptor<
 
 // Is Interface
 export interface Is extends SuperGuards {
-  in: GuardHas<unknown>
+  in: HasGuard<unknown>
 }
 
 // ##########################################################################################################################
