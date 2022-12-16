@@ -3,6 +3,7 @@
 # ts-misc
 Typescript Miscellaneous Library
 
+---
 ## Usage
 The `ts-misc` package exports several utility modules for TypeScript.
 
@@ -16,6 +17,7 @@ const words = ['hello', 'world'] as const
 const result: "hello world" = strings.join(words, ' ')
 ```
 
+---
 ## Super Guard
 One of the main goals of this library is to make Type-Guards simple (while keeping them compile-time correct). This is accomplished by the use of the `is` export.
 
@@ -65,6 +67,7 @@ if (is.number.or.string(example)) {
 }
 ```
 
+---
 ### Using existing Type-Guards along with `SuperGuard`
 
 Let's assume you've defined the following Type and Type-Guard:
@@ -109,6 +112,7 @@ if (is.number.or(isHelloWorld)(example)) {
 
 Using the `SuperGuard` object to extend existing Type-Guards will greatly reduce developing time and improve the readability of the code.
 
+---
 ### Iterate over objects with `SuperGuard`
 
 As shown before, the `is` Proxy allows you to combine multiple Type-Guards with the use of the `or` attribute.
@@ -165,6 +169,7 @@ if (is.object.of.boolean(example)) {
 }
 ```
 
+---
 ### Using a `GuardDescriptor` to genreate Type-Guards
 
 Finally, there's one more key functionality in the `is` Proxy. It can generate interface Type-Guards in a very intuitive and concise way using what's called a `GuardDescriptor`.
@@ -239,3 +244,4 @@ if (isCustomUser(example)) {
 The `is` Proxy is a callable object and, if you pass it a correct `GuardDescriptor` like in the examples above, it will be able to build a new Type-Guard matching the descriptor's keys.
 
 This should make the use of Type-Guards really simple and quick. And there's no overhead since you can always ensure the resulting Type-Guard matches a given Type.
+---
