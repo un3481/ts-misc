@@ -68,7 +68,7 @@ if (is.number.or.string(example)) {
 ```
 
 ---
-## Using existing Type-Guards along with `SuperGuard`
+## Using existing Type-Guards along with Super-Guard
 
 Let's assume you've defined the following Type and Type-Guard:
 
@@ -113,7 +113,7 @@ if (is.number.or(isHelloWorld)(example)) {
 Using the `SuperGuard` object to extend existing Type-Guards will greatly reduce developing time and improve the readability of the code.
 
 ---
-## Iterate over objects with `SuperGuard`
+## Iterate over objects with Super-Guard
 
 As shown before, the `is` Proxy allows you to combine multiple Type-Guards with the use of the `or` attribute.
 
@@ -170,7 +170,7 @@ if (is.object.of.boolean(example)) {
 ```
 
 ---
-## Using a `GuardDescriptor` to genreate Type-Guards
+## Using a `GuardDescriptor` to generate Type-Guards
 
 Finally, there's one more key functionality in the `is` Proxy. It can generate interface Type-Guards in a very intuitive and concise way using what's called a `GuardDescriptor`.
 
