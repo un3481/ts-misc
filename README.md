@@ -201,7 +201,7 @@ const isCustomUser = is({
 });
 ```
 
-That's it, you can build a Type-Guard for an complex interface just like that. And you can also certify that the resulting Type-Guard is correct by doing the following:
+And that's it. You can build a Type-Guard for a complex interface just like that! And you can also certify that the resulting Type-Guard is correct by doing the following:
 
 ```typescript
 // Ensure the resulting Type-Guard matches the targeted Type
