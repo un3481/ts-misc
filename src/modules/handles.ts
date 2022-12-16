@@ -147,11 +147,11 @@ export const repeat = async <T>(
     // execute function
     const [ok, value] = await sfun()
     // if no error occurred
-    if (ok) {
+    if (ok && !is.error(value)) {
       // execute verify
-      const [ok, cond] = await sverify(value as Await<T>)
+      const [ok, cond] = await sverify(value)
       // check for result
-      if (ok && cond) return value as Await<T>
+      if (ok && cond) return value
     }
     i++
   }

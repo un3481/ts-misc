@@ -361,6 +361,7 @@ export interface ExtendedTypesList {
   false: false
   array: unknown[]
   promise: Promise<unknown>
+  error: Error
   date: Date
   regexp: RegExp
   typeof: Types
