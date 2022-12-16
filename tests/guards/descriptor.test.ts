@@ -1,5 +1,5 @@
 import { is } from '../../src/modules/guards'
-import { GuardDescriptor, TypeFromGuardDescriptor } from '../../src/modules/types';
+import { GuardDescriptor } from '../../src/modules/types';
 
 describe('test SuperGuard from GuardDescriptor[object]', () => {
 
