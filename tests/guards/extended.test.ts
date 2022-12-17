@@ -69,20 +69,7 @@ describe('test ExtendedGuards', () => {
     expect( is.false(false)   ).toBe( true  );
   });
 
-  const assertType7: (o) => o is Date = is.date;
-
-  test('test ExtendedGuards[date]', () => {
-    expect( is.date(null)                   ).toBe( false );
-    expect( is.date({})                     ).toBe( false );
-    expect( is.date(1)                      ).toBe( false );
-    expect( is.date('')                     ).toBe( false );
-    expect( is.date('1')                    ).toBe( false );
-    expect( is.date(Date())                 ).toBe( false );
-    expect( is.date(new Date())             ).toBe( true  );
-    expect( is.date(new Date("2022-03-25")) ).toBe( true  );
-  });
-
-  const assertType8: (o) => o is unknown[] = is.array;
+  const assertType7: (o) => o is unknown[] = is.array;
 
   test('test ExtendedGuards[array]', () => {
     expect( is.array(null)                ).toBe( false );
@@ -98,7 +85,33 @@ describe('test ExtendedGuards', () => {
     expect( is.array(new Array([1, '2'])) ).toBe( true  );
   });
 
-  const assertType9: (o) => o is RegExp = is.regexp;
+  const assertType8: (o) => o is Date = is.date;
+
+  test('test ExtendedGuards[date]', () => {
+    expect( is.date(null)                   ).toBe( false );
+    expect( is.date({})                     ).toBe( false );
+    expect( is.date(1)                      ).toBe( false );
+    expect( is.date('')                     ).toBe( false );
+    expect( is.date('1')                    ).toBe( false );
+    expect( is.date(Date())                 ).toBe( false );
+    expect( is.date(new Date())             ).toBe( true  );
+    expect( is.date(new Date("2022-03-25")) ).toBe( true  );
+  });
+
+  const assertType9: (o) => o is Error = is.error;
+
+  test('test ExtendedGuards[error]', () => {
+    expect( is.error(null)              ).toBe( false );
+    expect( is.error({})                ).toBe( false );
+    expect( is.error(1)                 ).toBe( false );
+    expect( is.error('')                ).toBe( false );
+    expect( is.error('1')               ).toBe( false );
+    expect( is.error(Error())           ).toBe( true  );
+    expect( is.error(new Error())       ).toBe( true  );
+    expect( is.error(new Error("test")) ).toBe( true  );
+  });
+
+  const assertType10: (o) => o is RegExp = is.regexp;
 
   test('test ExtendedGuards[regexp]', () => {
     expect( is.regexp(null)             ).toBe( false );
@@ -113,7 +126,7 @@ describe('test ExtendedGuards', () => {
     expect( is.regexp(new RegExp(/\s/)) ).toBe( true  );
   });
 
-  const assertType10: (o) => o is Promise<unknown> = is.promise;
+  const assertType11: (o) => o is Promise<unknown> = is.promise;
 
   test('test ExtendedGuards[promise]', async () => {
     const example = new Promise(r => r(null));
@@ -130,7 +143,7 @@ describe('test ExtendedGuards', () => {
     expect( is.promise(await example)            ).toBe( false );
   });
 
-  const assertType11: (o) => o is Types = is.typeof;
+  const assertType12: (o) => o is Types = is.typeof;
 
   test('test ExtendedGuards[typeof]', () => {
     expect( is.typeof(null)      ).toBe( false );
@@ -144,7 +157,7 @@ describe('test ExtendedGuards', () => {
     expect( is.typeof('time')    ).toBe( false );
   });
 
-  const assertType12: (o) => o is (string | number | symbol) = is.keyof;
+  const assertType13: (o) => o is (string | number | symbol) = is.keyof;
 
   test('test ExtendedGuards[keyof]', () => {
     expect( is.keyof(null)            ).toBe( false );
