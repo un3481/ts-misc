@@ -13,34 +13,37 @@
 */
 
 // Imports
-import * as Numbers from './modules/numbers'
-import * as Strings from './modules/strings'
-import * as Handles from './modules/handles'
-import * as Guards  from './modules/guards'
-import * as Types   from './modules/types'
-import * as Sets    from './modules/sets'
+import * as numbers from './modules/numbers'
+import * as strings from './modules/strings'
+import * as handles from './modules/handles'
+import * as guards  from './modules/guards'
+import * as types   from './modules/types'
+import * as sets    from './modules/sets'
+
+const is = guards.is
 
 // ##########################################################################################################################
 
-// Exports
-export const numbers = Numbers
-export const strings = Strings
-export const handles = Handles
-export const guards  = Guards
-export const types   = Types
-export const sets    = Sets
-export const is      = Guards.is
-
-// Default Exports
+// Default Export
 export default {
-  numbers: Numbers,
-  strings: Strings,
-  handles: Handles,
-  guards:  Guards,
-  types:   Types,
-  sets:    Sets,
-  is:      Guards.is
+  numbers: numbers,
+  strings: strings,
+  handles: handles,
+  guards:  guards,
+  types:   types,
+  sets:    sets,
+  is:      is
+}
+
+// Exports
+export {
+  numbers,
+  strings,
+  handles,
+  guards,
+  types,
+  sets,
+  is
 }
 
 // ##########################################################################################################################
-

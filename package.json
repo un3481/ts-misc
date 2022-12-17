@@ -1,7 +1,7 @@
 {
   "name": "ts-misc",
   "author": "anthony",
-  "version": "1.9.2",
+  "version": "1.9.3",
   "description": "Typescript Miscellaneous Library",
   "license": "MIT",
   "type": "module",
