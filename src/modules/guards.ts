@@ -175,7 +175,9 @@ type IterGuard<
 // Check if Input is valid GuardDescriptor
 const isGuardDescriptor = <
   T extends ReadonlyInclude<unknown[] | Set> = null
->(obj: unknown): obj is GuardDescriptor<T> => {
+>(
+  obj: unknown
+): obj is GuardDescriptor<T> => {
   if (guards.array(obj)) {
     if (obj.every(
       o => guards.function(o) || isGuardDescriptor(o)
@@ -193,7 +195,9 @@ const isGuardDescriptor = <
 
 const guardFromArrayDescriptor = <
   D extends GuardDescriptor
->(descriptor: D): (
+>(
+  descriptor: D
+): (
   TypeGuard<TypeFromGuardDescriptor<D>, []>
 ) => {
   if (!guards.array(descriptor)) throw new Error('invalid Guard-Descriptor')
@@ -216,7 +220,9 @@ const guardFromArrayDescriptor = <
 
 const guardFromObjectDescriptor = <
   D extends GuardDescriptor
->(descriptor: D): (
+>(
+  descriptor: D
+): (
   TypeGuard<TypeFromGuardDescriptor<D>, []>
 ) => (
   (obj: unknown): obj is TypeFromGuardDescriptor<D> => {
@@ -236,7 +242,11 @@ const guardFromObjectDescriptor = <
 
 const guardFromDescriptor = <
   D extends GuardDescriptor
->(descriptor: D): TypeGuard<TypeFromGuardDescriptor<D>, []> => (
+>(
+  descriptor: D
+): (
+  TypeGuard<TypeFromGuardDescriptor<D>, []>
+) => (
   guards.array(descriptor)
     ? guardFromArrayDescriptor<D>(descriptor)
     : (
@@ -249,11 +259,11 @@ const guardFromDescriptor = <
 // ##########################################################################################################################
 
 const GuardGenerate = <
-  T extends GuardOrDescriptor
+  D extends GuardOrDescriptor
 >(
-  descriptor: T
+  descriptor: D
 ): (
-  TypeGuard<TypeFromGuardOrDescriptor<T>, []>
+  TypeGuard<TypeFromGuardOrDescriptor<D>, []>
 ) => (
   (
     guards.function(descriptor)
@@ -263,7 +273,7 @@ const GuardGenerate = <
           ? guardFromDescriptor(descriptor)
           : null
       )
-  ) as TypeGuard<TypeFromGuardOrDescriptor<T>, []>
+  ) as TypeGuard<TypeFromGuardOrDescriptor<D>, []>
 )
 
 // ##########################################################################################################################
